@@ -1,0 +1,2 @@
+[workspace]
+members = ["idb", "idb-sys"]
