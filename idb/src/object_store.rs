@@ -87,7 +87,7 @@ impl ObjectStore {
     /// Retrieves the values of the records matching the given key or key range in query (up to limit if given).
     pub async fn get_all(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all(query.map(Into::into), limit)?;
@@ -98,7 +98,7 @@ impl ObjectStore {
     /// Retrieves the keys of records matching the given key or key range in query (up to limit if given).
     pub async fn get_all_keys(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all_keys(query.map(Into::into), limit)?;
@@ -107,7 +107,7 @@ impl ObjectStore {
     }
 
     /// Retrieves the number of records matching the given key or key range in query.
-    pub async fn count(&self, query: Option<impl Into<Query>>) -> Result<u32, Error> {
+    pub async fn count(&self, query: Option<Query>) -> Result<u32, Error> {
         let request = self.inner.count(query.map(Into::into))?;
         let value: JsValue = wait_request(request).await?;
 
@@ -121,7 +121,7 @@ impl ObjectStore {
     /// all records in store are matched.
     pub async fn open_cursor(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
     ) -> Result<Cursor, Error> {
         let request = self
@@ -134,7 +134,7 @@ impl ObjectStore {
     /// `None`, all records in store are matched.
     pub async fn open_key_cursor(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
     ) -> Result<KeyCursor, Error> {
         let request = self

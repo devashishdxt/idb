@@ -18,7 +18,7 @@ pub use self::{
     cursor::{Cursor, CursorDirection, KeyCursor},
     database::Database,
     error::Error,
-    event::{EventExt, VersionChangeEvent},
+    event::{FromEventTarget, VersionChangeEvent},
     factory::Factory,
     index::{Index, IndexParams},
     key_range::KeyRange,

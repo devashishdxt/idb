@@ -3,7 +3,7 @@ use thiserror::Error;
 use wasm_bindgen::{JsCast, JsValue};
 
 /// Error type for [`idb-sys`](crate) crate.
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq)]
 pub enum Error {
     /// Failed to add a value
     #[error("failed to add a value: {}", js_object_display(.0))]

@@ -69,20 +69,16 @@ impl Index {
     }
 
     /// Retrieves the values of the records matching the given key or key range in query (up to limit if given).
-    pub fn get_all(
-        &self,
-        query: Option<impl Into<Query>>,
-        limit: Option<u32>,
-    ) -> Result<StoreRequest, Error> {
+    pub fn get_all(&self, query: Option<Query>, limit: Option<u32>) -> Result<StoreRequest, Error> {
         match (query, limit) {
             (Some(query), Some(limit)) => self
                 .inner
-                .get_all_with_key_and_limit(&query.into().into(), limit)
+                .get_all_with_key_and_limit(&query.into(), limit)
                 .map(Into::into)
                 .map_err(Error::GetAllKeysFailed),
             (Some(query), None) => self
                 .inner
-                .get_all_with_key(&query.into().into())
+                .get_all_with_key(&query.into())
                 .map(Into::into)
                 .map_err(Error::GetAllKeysFailed),
             (None, Some(limit)) => self
@@ -101,18 +97,18 @@ impl Index {
     /// Retrieves the keys of records matching the given key or key range in query (up to limit if given).
     pub fn get_all_keys(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         limit: Option<u32>,
     ) -> Result<StoreRequest, Error> {
         match (query, limit) {
             (Some(query), Some(limit)) => self
                 .inner
-                .get_all_keys_with_key_and_limit(&query.into().into(), limit)
+                .get_all_keys_with_key_and_limit(&query.into(), limit)
                 .map(Into::into)
                 .map_err(Error::GetAllKeysFailed),
             (Some(query), None) => self
                 .inner
-                .get_all_keys_with_key(&query.into().into())
+                .get_all_keys_with_key(&query.into())
                 .map(Into::into)
                 .map_err(Error::GetAllKeysFailed),
             (None, Some(limit)) => self
@@ -129,7 +125,7 @@ impl Index {
     }
 
     /// Retrieves the number of records matching the given key or key range in query.
-    pub fn count(&self, query: Option<impl Into<Query>>) -> Result<StoreRequest, Error> {
+    pub fn count(&self, query: Option<Query>) -> Result<StoreRequest, Error> {
         match query {
             None => self
                 .inner
@@ -138,7 +134,7 @@ impl Index {
                 .map_err(Error::CountFailed),
             Some(query) => self
                 .inner
-                .count_with_key(&query.into().into())
+                .count_with_key(&query.into())
                 .map(Into::into)
                 .map_err(Error::CountFailed),
         }
@@ -148,18 +144,18 @@ impl Index {
     /// records in index are matched.
     pub fn open_cursor(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
     ) -> Result<StoreRequest, Error> {
         match (query, cursor_direction) {
             (Some(query), Some(cursor_direction)) => self
                 .inner
-                .open_cursor_with_range_and_direction(&query.into().into(), cursor_direction.into())
+                .open_cursor_with_range_and_direction(&query.into(), cursor_direction.into())
                 .map(Into::into)
                 .map_err(Error::OpenCursorFailed),
             (Some(query), None) => self
                 .inner
-                .open_cursor_with_range(&query.into().into())
+                .open_cursor_with_range(&query.into())
                 .map(Into::into)
                 .map_err(Error::OpenCursorFailed),
             (None, Some(cursor_direction)) => self
@@ -179,21 +175,18 @@ impl Index {
     /// `None`, all records in index are matched.
     pub fn open_key_cursor(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
     ) -> Result<StoreRequest, Error> {
         match (query, cursor_direction) {
             (Some(query), Some(cursor_direction)) => self
                 .inner
-                .open_key_cursor_with_range_and_direction(
-                    &query.into().into(),
-                    cursor_direction.into(),
-                )
+                .open_key_cursor_with_range_and_direction(&query.into(), cursor_direction.into())
                 .map(Into::into)
                 .map_err(Error::OpenCursorFailed),
             (Some(query), None) => self
                 .inner
-                .open_key_cursor_with_range(&query.into().into())
+                .open_key_cursor_with_range(&query.into())
                 .map(Into::into)
                 .map_err(Error::OpenCursorFailed),
             (None, Some(cursor_direction)) => self

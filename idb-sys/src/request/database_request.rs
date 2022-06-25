@@ -2,9 +2,11 @@ use std::ops::Deref;
 
 use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{DomException, Event, IdbOpenDbRequest, IdbVersionChangeEvent};
+use web_sys::{DomException, Event, EventTarget, IdbOpenDbRequest, IdbVersionChangeEvent};
 
-use crate::{Database, Error, Request, RequestReadyState, Transaction, VersionChangeEvent};
+use crate::{
+    Database, Error, FromEventTarget, Request, RequestReadyState, Transaction, VersionChangeEvent,
+};
 
 /// Request returned by [`Factory`](crate::Factory) when opening or deleting a database.
 #[derive(Debug)]
@@ -96,6 +98,16 @@ impl Request for DatabaseRequest {
         self.inner
             .set_onerror(Some(closure.as_ref().unchecked_ref()));
         self.error_callback = Some(closure);
+    }
+}
+
+impl FromEventTarget for DatabaseRequest {
+    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+        let target: JsValue = target.into();
+        target
+            .dyn_into::<IdbOpenDbRequest>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbOpenDbRequest", value))
     }
 }
 

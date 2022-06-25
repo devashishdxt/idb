@@ -5,9 +5,9 @@ pub use self::transaction_mode::TransactionMode;
 use std::ops::Deref;
 
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{DomException, Event, IdbTransaction};
+use web_sys::{DomException, Event, EventTarget, IdbTransaction};
 
-use crate::{utils::dom_string_list_to_vec, Database, Error, ObjectStore};
+use crate::{utils::dom_string_list_to_vec, Database, Error, FromEventTarget, ObjectStore};
 
 /// Provides a static, asynchronous transaction on a database. All reading and writing of data is done within
 /// transactions.
@@ -96,6 +96,16 @@ impl Transaction {
         self.inner
             .set_onerror(Some(closure.as_ref().unchecked_ref()));
         self.error_callback = Some(closure);
+    }
+}
+
+impl FromEventTarget for Transaction {
+    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+        let target: JsValue = target.into();
+        target
+            .dyn_into::<IdbTransaction>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbTransaction", value))
     }
 }
 

@@ -3,11 +3,11 @@ use std::ops::Deref;
 use js_sys::Array;
 use num_traits::ToPrimitive;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{Event, IdbDatabase};
+use web_sys::{Event, EventTarget, IdbDatabase};
 
 use crate::{
-    utils::dom_string_list_to_vec, Error, ObjectStore, ObjectStoreParams, Transaction,
-    TransactionMode,
+    utils::dom_string_list_to_vec, Error, FromEventTarget, ObjectStore, ObjectStoreParams,
+    Transaction, TransactionMode,
 };
 
 /// [`Database`] provides a connection to a database; you can use an [`Database`] object to open a transaction on your
@@ -129,6 +129,16 @@ impl Database {
         self.inner
             .set_onversionchange(Some(closure.as_ref().unchecked_ref()));
         self.version_change_callback = Some(closure);
+    }
+}
+
+impl FromEventTarget for Database {
+    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+        let target: JsValue = target.into();
+        target
+            .dyn_into::<IdbDatabase>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbDatabase", value))
     }
 }
 

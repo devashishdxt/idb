@@ -2,9 +2,9 @@ use std::ops::Deref;
 
 use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
-use web_sys::{DomException, Event, IdbRequest};
+use web_sys::{DomException, Event, EventTarget, IdbRequest};
 
-use crate::{Error, Request, RequestReadyState, Transaction};
+use crate::{Error, FromEventTarget, Request, RequestReadyState, Transaction};
 
 /// Request returned when performing operations on an [`ObjectStore`](crate::ObjectStore).
 #[derive(Debug)]
@@ -53,6 +53,16 @@ impl Request for StoreRequest {
         self.inner
             .set_onerror(Some(closure.as_ref().unchecked_ref()));
         self.error_callback = Some(closure);
+    }
+}
+
+impl FromEventTarget for StoreRequest {
+    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+        let target: JsValue = target.into();
+        target
+            .dyn_into::<IdbRequest>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbRequest", value))
     }
 }
 

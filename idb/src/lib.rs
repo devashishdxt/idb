@@ -6,6 +6,7 @@ mod factory;
 mod index;
 mod key_range;
 mod object_store;
+mod open_request;
 mod query;
 mod transaction;
 mod utils;
@@ -23,6 +24,7 @@ pub use self::{
     index::Index,
     key_range::KeyRange,
     object_store::ObjectStore,
+    open_request::OpenRequest,
     query::Query,
     transaction::Transaction,
 };

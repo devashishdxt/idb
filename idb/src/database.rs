@@ -1,7 +1,8 @@
 use std::ops::Deref;
 
-use idb_sys::Database as SysDatabase;
+use idb_sys::{Database as SysDatabase, DatabaseRequest, FromEventTarget};
 use wasm_bindgen::JsValue;
+use web_sys::Event;
 
 use crate::{Error, ObjectStore, ObjectStoreParams, Transaction, TransactionMode};
 
@@ -67,6 +68,28 @@ impl Database {
     pub fn delete_object_store(&self, name: &str) -> Result<(), Error> {
         self.inner.delete_object_store(name).map_err(Into::into)
     }
+
+    /// Adds an event handler for `close` event.
+    pub fn on_close<F>(&mut self, callback: F)
+    where
+        F: FnOnce(Self) + 'static,
+    {
+        self.inner.on_close(move |event| {
+            let database = get_database_from_event(event).expect("database");
+            callback(database);
+        })
+    }
+
+    /// Adds an event handler for `versionchange` event.
+    pub fn on_version_change<F>(&mut self, callback: F)
+    where
+        F: FnOnce(Database) + 'static,
+    {
+        self.inner.on_version_change(move |event| {
+            let database = get_database_from_event(event).expect("database");
+            callback(database);
+        })
+    }
 }
 
 impl Deref for Database {
@@ -102,4 +125,11 @@ impl From<Database> for JsValue {
     fn from(value: Database) -> Self {
         value.inner.into()
     }
+}
+
+fn get_database_from_event(event: Event) -> Result<Database, Error> {
+    let target = event.target().ok_or(Error::EventTargetNotFound)?;
+    let request = DatabaseRequest::from_event_target(target)?;
+
+    request.database().map(Into::into).map_err(Into::into)
 }

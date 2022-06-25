@@ -61,7 +61,7 @@ impl Index {
     /// Retrieves the values of the records matching the given key or key range in query (up to limit if given).
     pub async fn get_all(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all(query.map(Into::into), limit)?;
@@ -72,7 +72,7 @@ impl Index {
     /// Retrieves the keys of records matching the given key or key range in query (up to limit if given).
     pub async fn get_all_keys(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all_keys(query.map(Into::into), limit)?;
@@ -81,7 +81,7 @@ impl Index {
     }
 
     /// Retrieves the number of records matching the given key or key range in query.
-    pub async fn count(&self, query: Option<impl Into<Query>>) -> Result<u32, Error> {
+    pub async fn count(&self, query: Option<Query>) -> Result<u32, Error> {
         let request = self.inner.count(query.map(Into::into))?;
         let value: JsValue = wait_request(request).await?;
 
@@ -95,7 +95,7 @@ impl Index {
     /// records in index are matched.
     pub async fn open_cursor(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
     ) -> Result<Cursor, Error> {
         let request = self
@@ -108,7 +108,7 @@ impl Index {
     /// `None`, all records in index are matched.
     pub async fn open_key_cursor(
         &self,
-        query: Option<impl Into<Query>>,
+        query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
     ) -> Result<KeyCursor, Error> {
         let request = self

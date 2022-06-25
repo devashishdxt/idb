@@ -5,7 +5,7 @@ use thiserror::Error;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::DomException;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq)]
 pub enum Error {
     /// DOM exception
     #[error("DOM exception: {}", js_object_display(.0))]

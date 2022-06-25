@@ -1,4 +1,4 @@
-use idb_sys::{Request, StoreRequest};
+use idb_sys::{FromEventTarget, Request, StoreRequest, Transaction as SysTransaction};
 use js_sys::Array;
 use tokio::{select, sync::oneshot};
 use wasm_bindgen::JsValue;
@@ -34,12 +34,11 @@ pub async fn wait_transaction(transaction: &mut Transaction) -> Result<(), Error
     let (success_sender, success_receiver) = oneshot::channel::<Result<(), Error>>();
 
     transaction.inner.on_error(move |event| {
-        let res = error_callback(event);
+        let res = transaction_error_callback(event);
         let _ = error_sender.send(res);
     });
-    transaction.inner.on_complete(move |event| {
-        let res: Result<JsValue, Error> = success_callback(event);
-        let _ = success_sender.send(res.map(|_| ()));
+    transaction.inner.on_complete(move |_| {
+        let _ = success_sender.send(Ok(()));
     });
 
     select! {
@@ -53,12 +52,11 @@ pub async fn wait_transaction_commit(transaction: &mut Transaction) -> Result<()
     let (success_sender, success_receiver) = oneshot::channel::<Result<(), Error>>();
 
     transaction.inner.on_error(move |event| {
-        let res = error_callback(event);
+        let res = transaction_error_callback(event);
         let _ = error_sender.send(res);
     });
-    transaction.inner.on_complete(move |event| {
-        let res: Result<JsValue, Error> = success_callback(event);
-        let _ = success_sender.send(res.map(|_| ()));
+    transaction.inner.on_complete(move |_| {
+        let _ = success_sender.send(Ok(()));
     });
 
     transaction.inner.commit()?;
@@ -88,8 +86,8 @@ where
     T: TryFrom<JsValue, Error = E>,
     E: Into<Error>,
 {
-    let target: JsValue = event.target().ok_or(Error::EventTargetNotFound)?.into();
-    let request: StoreRequest = target.try_into()?;
+    let request =
+        StoreRequest::from_event_target(event.target().ok_or(Error::EventTargetNotFound)?)?;
 
     request
         .result()
@@ -98,10 +96,22 @@ where
 }
 
 fn error_callback<T>(event: Event) -> Result<T, Error> {
-    let target: JsValue = event.target().ok_or(Error::EventTargetNotFound)?.into();
-    let request: StoreRequest = target.try_into()?;
+    let request =
+        StoreRequest::from_event_target(event.target().ok_or(Error::EventTargetNotFound)?)?;
 
     let error = request.error()?;
+
+    match error {
+        None => Err(Error::DomExceptionNotFound),
+        Some(error) => Err(Error::DomException(error)),
+    }
+}
+
+fn transaction_error_callback<T>(event: Event) -> Result<T, Error> {
+    let transaction =
+        SysTransaction::from_event_target(event.target().ok_or(Error::EventTargetNotFound)?)?;
+
+    let error = transaction.error();
 
     match error {
         None => Err(Error::DomExceptionNotFound),

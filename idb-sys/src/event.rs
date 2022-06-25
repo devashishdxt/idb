@@ -2,14 +2,14 @@ use std::ops::Deref;
 
 use num_traits::ToPrimitive;
 use wasm_bindgen::JsValue;
-use web_sys::{Event, IdbVersionChangeEvent};
+use web_sys::{EventTarget, IdbVersionChangeEvent};
 
-use crate::{DatabaseRequest, Error};
+use crate::Error;
 
-/// Extension trait for event types
-pub trait EventExt {
-    /// Returns the database request that triggered the event.
-    fn request(&self) -> Result<DatabaseRequest, Error>;
+/// Conversion trait for various event targets
+pub trait FromEventTarget: Sized {
+    /// Convers from event target
+    fn from_event_target(target: EventTarget) -> Result<Self, Error>;
 }
 
 /// Event triggered when the database version changes, as the result of an [`DatabaseRequest::on_upgrade_needed`](crate::DatabaseRequest::on_upgrade_needed) event
@@ -34,20 +34,6 @@ impl VersionChangeEvent {
             .new_version()
             .map(|new| new.to_u32().ok_or(Error::NumberConversionError))
             .transpose()
-    }
-}
-
-impl EventExt for VersionChangeEvent {
-    fn request(&self) -> Result<DatabaseRequest, Error> {
-        let target: JsValue = self.target().ok_or(Error::EventTargetNotFound)?.into();
-        target.try_into()
-    }
-}
-
-impl EventExt for Event {
-    fn request(&self) -> Result<DatabaseRequest, Error> {
-        let target: JsValue = self.target().ok_or(Error::EventTargetNotFound)?.into();
-        target.try_into()
     }
 }
 
