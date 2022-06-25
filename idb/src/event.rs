@@ -1,9 +1,9 @@
 use std::ops::Deref;
 
-use idb_sys::VersionChangeEvent as SysVersionChangeEvent;
+use idb_sys::{EventExt, Request, VersionChangeEvent as SysVersionChangeEvent};
 use wasm_bindgen::JsValue;
 
-use crate::Error;
+use crate::{Database, Error, Transaction};
 
 /// Event triggered when the database version changes, as the result of an `upgrade_handler` function.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -20,6 +20,21 @@ impl VersionChangeEvent {
     /// Returns new version of database.
     pub fn new_version(&self) -> Result<Option<u32>, Error> {
         self.inner.new_version().map_err(Into::into)
+    }
+
+    /// Returns the database that triggered the event.
+    pub fn database(&self) -> Result<Database, Error> {
+        self.inner
+            .request()?
+            .database()
+            .map(Into::into)
+            .map_err(Into::into)
+    }
+
+    /// Returns the transaction that the event was triggered within.
+    pub fn transaction(&self) -> Result<Option<Transaction>, Error> {
+        let reqeust = self.inner.request()?;
+        Ok(reqeust.transaction().map(Into::into))
     }
 }
 
@@ -43,10 +58,12 @@ impl From<VersionChangeEvent> for SysVersionChangeEvent {
     }
 }
 
-impl From<JsValue> for VersionChangeEvent {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for VersionChangeEvent {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

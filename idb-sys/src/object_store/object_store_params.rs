@@ -1,9 +1,9 @@
 use std::ops::Deref;
 
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbObjectStoreParameters;
 
-use crate::KeyPath;
+use crate::{Error, KeyPath};
 
 /// Options when creating an [`ObjectStore`](crate::ObjectStore).
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -50,10 +50,14 @@ impl From<ObjectStoreParams> for IdbObjectStoreParameters {
     }
 }
 
-impl From<JsValue> for ObjectStoreParams {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for ObjectStoreParams {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbObjectStoreParameters>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbObjectStoreParameters", value))
     }
 }
 

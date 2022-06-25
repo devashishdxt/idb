@@ -10,7 +10,7 @@ use crate::{Error, ObjectStore, ObjectStoreParams, Transaction, TransactionMode}
 /// get and manage versions of the database.
 #[derive(Debug)]
 pub struct Database {
-    inner: SysDatabase,
+    pub(crate) inner: SysDatabase,
 }
 
 impl Database {
@@ -89,10 +89,12 @@ impl From<Database> for SysDatabase {
     }
 }
 
-impl From<JsValue> for Database {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for Database {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

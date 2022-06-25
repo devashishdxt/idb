@@ -4,7 +4,7 @@ use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, IdbOpenDbRequest, IdbVersionChangeEvent};
 
-use crate::{Error, Request, RequestReadyState, Transaction, VersionChangeEvent};
+use crate::{Database, Error, Request, RequestReadyState, Transaction, VersionChangeEvent};
 
 /// Request returned by [`Factory`](crate::Factory) when opening or deleting a database.
 #[derive(Debug)]
@@ -17,6 +17,11 @@ pub struct DatabaseRequest {
 }
 
 impl DatabaseRequest {
+    /// Returns the database associated with this request
+    pub fn database(&self) -> Result<Database, Error> {
+        self.result().map(TryInto::try_into)?
+    }
+
     /// Adds an event handler for `blocked` event.
     pub fn on_blocked<F>(&mut self, callback: F)
     where
@@ -120,10 +125,14 @@ impl From<DatabaseRequest> for IdbOpenDbRequest {
     }
 }
 
-impl From<JsValue> for DatabaseRequest {
-    fn from(value: JsValue) -> Self {
-        let inner: IdbOpenDbRequest = value.into();
-        inner.into()
+impl TryFrom<JsValue> for DatabaseRequest {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbOpenDbRequest>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbOpenDbRequest", value))
     }
 }
 

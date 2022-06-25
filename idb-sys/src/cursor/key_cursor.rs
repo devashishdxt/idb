@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use js_sys::Object;
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbCursor;
 
 use crate::{CursorDirection, Error, StoreRequest};
@@ -104,10 +104,14 @@ impl From<KeyCursor> for IdbCursor {
     }
 }
 
-impl From<JsValue> for KeyCursor {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for KeyCursor {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbCursor>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbCursor", value))
     }
 }
 

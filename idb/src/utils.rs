@@ -6,9 +6,10 @@ use web_sys::Event;
 
 use crate::{Error, Transaction};
 
-pub async fn wait_request<T>(mut request: impl Request) -> Result<T, Error>
+pub async fn wait_request<T, E>(mut request: impl Request) -> Result<T, Error>
 where
-    T: From<JsValue> + 'static,
+    T: TryFrom<JsValue, Error = E> + 'static,
+    E: Into<Error>,
 {
     let (error_sender, error_receiver) = oneshot::channel::<Result<T, Error>>();
     let (success_sender, success_receiver) = oneshot::channel::<Result<T, Error>>();
@@ -82,19 +83,23 @@ pub async fn wait_transaction_abort(transaction: &mut Transaction) -> Result<(),
         .map_err(|_| Error::OneshotChannelReceiveError)
 }
 
-fn success_callback<T>(event: Event) -> Result<T, Error>
+fn success_callback<T, E>(event: Event) -> Result<T, Error>
 where
-    T: From<JsValue>,
+    T: TryFrom<JsValue, Error = E>,
+    E: Into<Error>,
 {
     let target: JsValue = event.target().ok_or(Error::EventTargetNotFound)?.into();
-    let request: StoreRequest = target.into();
+    let request: StoreRequest = target.try_into()?;
 
-    request.result().map(Into::into).map_err(Into::into)
+    request
+        .result()
+        .map_err(Into::into)
+        .and_then(|js_value| TryInto::try_into(js_value).map_err(Into::into))
 }
 
 fn error_callback<T>(event: Event) -> Result<T, Error> {
     let target: JsValue = event.target().ok_or(Error::EventTargetNotFound)?.into();
-    let request: StoreRequest = target.into();
+    let request: StoreRequest = target.try_into()?;
 
     let error = request.error()?;
 

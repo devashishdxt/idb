@@ -80,10 +80,14 @@ impl From<StoreRequest> for IdbRequest {
     }
 }
 
-impl From<JsValue> for StoreRequest {
-    fn from(value: JsValue) -> Self {
-        let inner: IdbRequest = value.into();
-        inner.into()
+impl TryFrom<JsValue> for StoreRequest {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbRequest>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbRequest", value))
     }
 }
 

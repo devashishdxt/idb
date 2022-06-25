@@ -5,7 +5,7 @@ pub use self::{key_path::KeyPath, object_store_params::ObjectStoreParams};
 
 use std::ops::Deref;
 
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbObjectStore;
 
 use crate::{
@@ -310,10 +310,14 @@ impl From<ObjectStore> for IdbObjectStore {
     }
 }
 
-impl From<JsValue> for ObjectStore {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for ObjectStore {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbObjectStore>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbObjectStore", value))
     }
 }
 

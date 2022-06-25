@@ -85,10 +85,12 @@ impl From<Transaction> for SysTransaction {
     }
 }
 
-impl From<JsValue> for Transaction {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for Transaction {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

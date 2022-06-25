@@ -1,7 +1,9 @@
 use std::ops::Deref;
 
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbIndexParameters;
+
+use crate::Error;
 
 /// Options when creating [`Index`](crate::Index).
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -48,10 +50,14 @@ impl From<IndexParams> for IdbIndexParameters {
     }
 }
 
-impl From<JsValue> for IndexParams {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for IndexParams {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbIndexParameters>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbIndexParameters", value))
     }
 }
 

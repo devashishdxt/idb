@@ -86,10 +86,12 @@ impl From<KeyCursor> for SysKeyCursor {
     }
 }
 
-impl From<JsValue> for KeyCursor {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for KeyCursor {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

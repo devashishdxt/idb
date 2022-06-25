@@ -114,7 +114,7 @@ impl ObjectStore {
         value
             .as_f64()
             .and_then(num_traits::cast)
-            .ok_or(Error::UnexpectedJsType)
+            .ok_or(Error::UnexpectedJsType("u32", value))
     }
 
     /// Opens a [`Cursor`](crate::Cursor) over the records matching query, ordered by direction. If query is `None`,
@@ -189,10 +189,12 @@ impl From<ObjectStore> for SysObjectStore {
     }
 }
 
-impl From<JsValue> for ObjectStore {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for ObjectStore {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

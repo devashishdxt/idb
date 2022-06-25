@@ -91,10 +91,12 @@ impl From<Cursor> for SysCursor {
     }
 }
 
-impl From<JsValue> for Cursor {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for Cursor {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

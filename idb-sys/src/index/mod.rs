@@ -4,7 +4,7 @@ pub use self::index_params::IndexParams;
 
 use std::ops::Deref;
 
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbIndex;
 
 use crate::{CursorDirection, Error, KeyPath, ObjectStore, Query, StoreRequest};
@@ -230,10 +230,14 @@ impl From<Index> for IdbIndex {
     }
 }
 
-impl From<JsValue> for Index {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for Index {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbIndex>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbIndex", value))
     }
 }
 

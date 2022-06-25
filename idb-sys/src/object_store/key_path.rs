@@ -48,7 +48,9 @@ impl TryFrom<JsValue> for KeyPath {
 
             Ok(KeyPath::Single(key_path))
         } else {
-            let key_path: Array = key_path.dyn_into().map_err(Error::ObjectConversionError)?;
+            let key_path: Array = key_path
+                .dyn_into()
+                .map_err(|value| Error::UnexpectedJsType("Array", value))?;
 
             let mut key_paths = vec![];
 

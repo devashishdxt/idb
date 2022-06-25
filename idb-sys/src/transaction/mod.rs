@@ -124,10 +124,14 @@ impl From<Transaction> for IdbTransaction {
     }
 }
 
-impl From<JsValue> for Transaction {
-    fn from(value: JsValue) -> Self {
-        let inner: IdbTransaction = value.into();
-        inner.into()
+impl TryFrom<JsValue> for Transaction {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbTransaction>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbTransaction", value))
     }
 }
 

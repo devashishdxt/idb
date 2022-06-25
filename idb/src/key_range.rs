@@ -94,10 +94,12 @@ impl From<KeyRange> for SysKeyRange {
     }
 }
 
-impl From<JsValue> for KeyRange {
-    fn from(value: JsValue) -> Self {
-        let inner: SysKeyRange = value.into();
-        inner.into()
+impl TryFrom<JsValue> for KeyRange {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        let inner = value.try_into()?;
+        Ok(Self { inner })
     }
 }
 

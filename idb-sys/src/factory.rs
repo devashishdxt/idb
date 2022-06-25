@@ -63,10 +63,14 @@ impl From<Factory> for IdbFactory {
     }
 }
 
-impl From<JsValue> for Factory {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for Factory {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbFactory>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbFactory", value))
     }
 }
 

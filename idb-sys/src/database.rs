@@ -158,10 +158,14 @@ impl From<Database> for IdbDatabase {
     }
 }
 
-impl From<JsValue> for Database {
-    fn from(value: JsValue) -> Self {
-        let inner: IdbDatabase = value.into();
-        inner.into()
+impl TryFrom<JsValue> for Database {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbDatabase>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbDatabase", value))
     }
 }
 
