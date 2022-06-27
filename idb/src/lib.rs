@@ -1,3 +1,5 @@
+#![deny(missing_docs, unsafe_code)]
+//! A futures based crate for interacting with IndexedDB on browsers using webassembly.
 mod cursor;
 mod database;
 mod error;

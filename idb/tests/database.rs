@@ -7,7 +7,7 @@ async fn test_database_name_and_version() {
     factory.delete("test").await.unwrap();
 
     let open_request = factory.open("test", 1).unwrap();
-    let database = open_request.execute().await.unwrap();
+    let database = open_request.into_future().await.unwrap();
 
     assert_eq!(database.name(), "test");
     assert_eq!(database.version(), Ok(1));
@@ -36,7 +36,7 @@ async fn test_database_store_names() {
             .unwrap();
     });
 
-    let database = open_request.execute().await.unwrap();
+    let database = open_request.into_future().await.unwrap();
 
     let store_names = database.store_names();
     assert_eq!(store_names.len(), 3);
@@ -68,7 +68,7 @@ async fn test_database_transaction() {
             .unwrap();
     });
 
-    let database = open_request.execute().await.unwrap();
+    let database = open_request.into_future().await.unwrap();
 
     let read_transaction = database.transaction(&["store1"], TransactionMode::ReadOnly);
     assert!(
@@ -116,7 +116,7 @@ async fn test_database_delete_object_store() {
             .unwrap();
     });
 
-    let mut database = open_request.execute().await.unwrap();
+    let mut database = open_request.into_future().await.unwrap();
     database.on_version_change(|database| database.close());
 
     let mut open_request = factory.open("test", 2).unwrap();
@@ -132,7 +132,7 @@ async fn test_database_delete_object_store() {
         database.delete_object_store("store2").unwrap();
     });
 
-    let database = open_request.execute().await.unwrap();
+    let database = open_request.into_future().await.unwrap();
 
     let store_names = database.store_names();
     assert_eq!(store_names.len(), 2);

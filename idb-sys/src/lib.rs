@@ -1,5 +1,4 @@
 #![deny(missing_docs, unsafe_code)]
-#![cfg_attr(feature = "future", into_future)]
 //! A callback based crate for interacting with IndexedDB on browsers using webassembly.
 mod cursor;
 mod database;

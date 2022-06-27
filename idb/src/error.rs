@@ -5,6 +5,7 @@ use thiserror::Error;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::DomException;
 
+/// Error type for [`idb`](crate) crate.
 #[derive(Debug, Error, PartialEq)]
 pub enum Error {
     /// DOM exception

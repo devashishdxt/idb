@@ -4,6 +4,7 @@ use web_sys::EventTarget;
 
 use crate::{utils::wait_request, Database, Error, VersionChangeEvent};
 
+/// Request returned by [`Factory`](crate::Factory) when opening a database.
 #[derive(Debug)]
 pub struct OpenRequest {
     inner: DatabaseRequest,
@@ -26,8 +27,8 @@ impl OpenRequest {
         self.inner.on_upgrade_needed(|event| callback(event.into()))
     }
 
-    /// Executes and waits for the database to open
-    pub async fn execute(self) -> Result<Database, Error> {
+    /// Returns a future which resolves when the database is opened.
+    pub async fn into_future(self) -> Result<Database, Error> {
         wait_request(self.inner).await
     }
 }

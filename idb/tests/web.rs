@@ -97,7 +97,7 @@ async fn create_db() -> Result<Database, Error> {
         assert!(agent_customer_index.is_ok());
     });
 
-    open_request.execute().await
+    open_request.into_future().await
 }
 
 pub async fn cleanup(database: Database) -> Result<(), Error> {

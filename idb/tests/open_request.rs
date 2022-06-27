@@ -14,7 +14,7 @@ async fn test_open_request_upgrade_needed() {
         sender.send(event).expect("channel send");
     });
 
-    let database = open_request.execute().await.unwrap();
+    let database = open_request.into_future().await.unwrap();
 
     let event = receiver.await.unwrap();
 
@@ -31,7 +31,7 @@ async fn test_open_request_blocked() {
     factory.delete("test").await.unwrap();
 
     let open_request = factory.open("test", 1).unwrap();
-    let database = open_request.execute().await.unwrap();
+    let database = open_request.into_future().await.unwrap();
 
     let mut blocking_open_request = factory.open("test", 2).unwrap();
 
@@ -47,7 +47,7 @@ async fn test_open_request_blocked() {
 
     database.close();
 
-    let database = blocking_open_request.execute().await.unwrap();
+    let database = blocking_open_request.into_future().await.unwrap();
     assert_eq!(database.version(), Ok(2));
 
     database.close();
