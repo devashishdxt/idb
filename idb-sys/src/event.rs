@@ -1,6 +1,8 @@
+use std::ops::Deref;
+
 use num_traits::ToPrimitive;
 use wasm_bindgen::JsValue;
-use web_sys::{EventTarget, IdbVersionChangeEvent};
+use web_sys::{Event, IdbVersionChangeEvent};
 
 use crate::Error;
 
@@ -27,10 +29,13 @@ impl VersionChangeEvent {
             .map(|new| new.to_u32().ok_or(Error::NumberConversionError))
             .transpose()
     }
+}
 
-    /// Returns event target for current event
-    pub fn target(&self) -> Option<EventTarget> {
-        self.inner.target()
+impl Deref for VersionChangeEvent {
+    type Target = Event;
+
+    fn deref(&self) -> &Self::Target {
+        self.inner.deref()
     }
 }
 
