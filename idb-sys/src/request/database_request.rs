@@ -4,9 +4,7 @@ use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, EventTarget, IdbOpenDbRequest, IdbVersionChangeEvent};
 
-use crate::{
-    Database, Error, FromEventTarget, Request, RequestReadyState, Transaction, VersionChangeEvent,
-};
+use crate::{Database, Error, Request, RequestReadyState, Transaction, VersionChangeEvent};
 
 /// Request returned by [`Factory`](crate::Factory) when opening or deleting a database.
 #[derive(Debug)]
@@ -101,8 +99,10 @@ impl Request for DatabaseRequest {
     }
 }
 
-impl FromEventTarget for DatabaseRequest {
-    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+impl TryFrom<EventTarget> for DatabaseRequest {
+    type Error = Error;
+
+    fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
         let target: JsValue = target.into();
         target
             .dyn_into::<IdbOpenDbRequest>()

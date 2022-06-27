@@ -2,9 +2,11 @@ use std::ops::Deref;
 
 use idb_sys::DatabaseRequest;
 use wasm_bindgen::JsValue;
+use web_sys::EventTarget;
 
 use crate::{utils::wait_request, Database, Error, VersionChangeEvent};
 
+#[derive(Debug)]
 pub struct OpenRequest {
     inner: DatabaseRequest,
 }
@@ -29,6 +31,15 @@ impl OpenRequest {
     /// Executes and waits for the database to open
     pub async fn execute(self) -> Result<Database, Error> {
         wait_request(self.inner).await
+    }
+}
+
+impl TryFrom<EventTarget> for OpenRequest {
+    type Error = Error;
+
+    fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
+        let inner = target.try_into()?;
+        Ok(Self { inner })
     }
 }
 

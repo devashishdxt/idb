@@ -1,2 +1,3 @@
 [workspace]
 members = ["idb", "idb-sys"]
+resolver = "2"

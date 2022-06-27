@@ -1,3 +1,7 @@
+mod database;
+mod factory;
+mod open_request;
+
 use idb::{
     Database, Error, Factory, IndexParams, KeyPath, KeyRange, ObjectStoreParams, TransactionMode,
 };
@@ -96,7 +100,7 @@ async fn create_db() -> Result<Database, Error> {
     open_request.execute().await
 }
 
-async fn cleanup(database: Database) -> Result<(), Error> {
+pub async fn cleanup(database: Database) -> Result<(), Error> {
     database.close();
 
     let factory = Factory::new()?;

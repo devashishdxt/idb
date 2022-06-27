@@ -1,8 +1,6 @@
 use std::ops::Deref;
 
-use idb_sys::{
-    DatabaseRequest, FromEventTarget, Request, VersionChangeEvent as SysVersionChangeEvent,
-};
+use idb_sys::{DatabaseRequest, Request, VersionChangeEvent as SysVersionChangeEvent};
 use wasm_bindgen::JsValue;
 
 use crate::{Database, Error, Transaction};
@@ -27,7 +25,7 @@ impl VersionChangeEvent {
     /// Returns the database that triggered the event.
     pub fn database(&self) -> Result<Database, Error> {
         let target = self.target().ok_or(Error::EventTargetNotFound)?;
-        let request: DatabaseRequest = DatabaseRequest::from_event_target(target)?;
+        let request: DatabaseRequest = DatabaseRequest::try_from(target)?;
 
         request.database().map(Into::into).map_err(Into::into)
     }
@@ -35,7 +33,7 @@ impl VersionChangeEvent {
     /// Returns the transaction that the event was triggered within.
     pub fn transaction(&self) -> Result<Option<Transaction>, Error> {
         let target = self.target().ok_or(Error::EventTargetNotFound)?;
-        let request: DatabaseRequest = DatabaseRequest::from_event_target(target)?;
+        let request: DatabaseRequest = DatabaseRequest::try_from(target)?;
 
         Ok(request.transaction().map(Into::into))
     }

@@ -4,7 +4,7 @@ use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, EventTarget, IdbRequest};
 
-use crate::{Error, FromEventTarget, Request, RequestReadyState, Transaction};
+use crate::{Error, Request, RequestReadyState, Transaction};
 
 /// Request returned when performing operations on an [`ObjectStore`](crate::ObjectStore).
 #[derive(Debug)]
@@ -56,8 +56,10 @@ impl Request for StoreRequest {
     }
 }
 
-impl FromEventTarget for StoreRequest {
-    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+impl TryFrom<EventTarget> for StoreRequest {
+    type Error = Error;
+
+    fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
         let target: JsValue = target.into();
         target
             .dyn_into::<IdbRequest>()

@@ -7,7 +7,7 @@ use std::ops::Deref;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, EventTarget, IdbTransaction};
 
-use crate::{utils::dom_string_list_to_vec, Database, Error, FromEventTarget, ObjectStore};
+use crate::{utils::dom_string_list_to_vec, Database, Error, ObjectStore};
 
 /// Provides a static, asynchronous transaction on a database. All reading and writing of data is done within
 /// transactions.
@@ -99,8 +99,10 @@ impl Transaction {
     }
 }
 
-impl FromEventTarget for Transaction {
-    fn from_event_target(target: EventTarget) -> Result<Self, Error> {
+impl TryFrom<EventTarget> for Transaction {
+    type Error = Error;
+
+    fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
         let target: JsValue = target.into();
         target
             .dyn_into::<IdbTransaction>()

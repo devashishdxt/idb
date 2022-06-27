@@ -1,4 +1,4 @@
-use idb_sys::{FromEventTarget, Request, StoreRequest, Transaction as SysTransaction};
+use idb_sys::{Request, StoreRequest, Transaction as SysTransaction};
 use js_sys::Array;
 use tokio::{select, sync::oneshot};
 use wasm_bindgen::JsValue;
@@ -86,8 +86,7 @@ where
     T: TryFrom<JsValue, Error = E>,
     E: Into<Error>,
 {
-    let request =
-        StoreRequest::from_event_target(event.target().ok_or(Error::EventTargetNotFound)?)?;
+    let request = StoreRequest::try_from(event.target().ok_or(Error::EventTargetNotFound)?)?;
 
     request
         .result()
@@ -96,8 +95,7 @@ where
 }
 
 fn error_callback<T>(event: Event) -> Result<T, Error> {
-    let request =
-        StoreRequest::from_event_target(event.target().ok_or(Error::EventTargetNotFound)?)?;
+    let request = StoreRequest::try_from(event.target().ok_or(Error::EventTargetNotFound)?)?;
 
     let error = request.error()?;
 
@@ -108,8 +106,7 @@ fn error_callback<T>(event: Event) -> Result<T, Error> {
 }
 
 fn transaction_error_callback<T>(event: Event) -> Result<T, Error> {
-    let transaction =
-        SysTransaction::from_event_target(event.target().ok_or(Error::EventTargetNotFound)?)?;
+    let transaction = SysTransaction::try_from(event.target().ok_or(Error::EventTargetNotFound)?)?;
 
     let error = transaction.error();
 

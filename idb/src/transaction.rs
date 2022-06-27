@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use idb_sys::{Transaction as SysTransaction, TransactionMode};
 use wasm_bindgen::JsValue;
-use web_sys::DomException;
+use web_sys::{DomException, EventTarget};
 
 use crate::{
     utils::{wait_transaction, wait_transaction_abort, wait_transaction_commit},
@@ -62,6 +62,15 @@ impl Transaction {
     /// Aborts the transaction. All pending requests will fail and all changes made to the database will be reverted.
     pub async fn abort(mut self) -> Result<(), Error> {
         wait_transaction_abort(&mut self).await
+    }
+}
+
+impl TryFrom<EventTarget> for Transaction {
+    type Error = Error;
+
+    fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
+        let inner = target.try_into()?;
+        Ok(Self { inner })
     }
 }
 

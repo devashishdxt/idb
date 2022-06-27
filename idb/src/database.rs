@@ -1,8 +1,8 @@
 use std::ops::Deref;
 
-use idb_sys::{Database as SysDatabase, DatabaseRequest, FromEventTarget};
+use idb_sys::Database as SysDatabase;
 use wasm_bindgen::JsValue;
-use web_sys::Event;
+use web_sys::{Event, EventTarget};
 
 use crate::{Error, ObjectStore, ObjectStoreParams, Transaction, TransactionMode};
 
@@ -92,6 +92,15 @@ impl Database {
     }
 }
 
+impl TryFrom<EventTarget> for Database {
+    type Error = Error;
+
+    fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
+        let inner = target.try_into()?;
+        Ok(Self { inner })
+    }
+}
+
 impl Deref for Database {
     type Target = SysDatabase;
 
@@ -129,7 +138,5 @@ impl From<Database> for JsValue {
 
 fn get_database_from_event(event: Event) -> Result<Database, Error> {
     let target = event.target().ok_or(Error::EventTargetNotFound)?;
-    let request = DatabaseRequest::from_event_target(target)?;
-
-    request.database().map(Into::into).map_err(Into::into)
+    Database::try_from(target).map_err(Into::into)
 }

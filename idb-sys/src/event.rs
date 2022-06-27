@@ -2,15 +2,9 @@ use std::ops::Deref;
 
 use num_traits::ToPrimitive;
 use wasm_bindgen::JsValue;
-use web_sys::{EventTarget, IdbVersionChangeEvent};
+use web_sys::IdbVersionChangeEvent;
 
 use crate::Error;
-
-/// Conversion trait for various event targets
-pub trait FromEventTarget: Sized {
-    /// Convers from event target
-    fn from_event_target(target: EventTarget) -> Result<Self, Error>;
-}
 
 /// Event triggered when the database version changes, as the result of an [`DatabaseRequest::on_upgrade_needed`](crate::DatabaseRequest::on_upgrade_needed) event
 /// handler function.
