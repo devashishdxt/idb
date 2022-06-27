@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::KeyRange as SysKeyRange;
 use wasm_bindgen::JsValue;
 
@@ -71,14 +69,6 @@ impl KeyRange {
     /// Returns true if key is included in the range, and false otherwise.
     pub fn includes(&self, value: &JsValue) -> Result<bool, Error> {
         self.inner.includes(value).map_err(Into::into)
-    }
-}
-
-impl Deref for KeyRange {
-    type Target = SysKeyRange;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

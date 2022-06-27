@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbObjectStoreParameters;
 
@@ -27,14 +25,6 @@ impl ObjectStoreParams {
     pub fn key_path(&mut self, key_path: Option<KeyPath>) -> &mut Self {
         self.inner.key_path(key_path.map(Into::into).as_ref());
         self
-    }
-}
-
-impl Deref for ObjectStoreParams {
-    type Target = IdbObjectStoreParameters;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

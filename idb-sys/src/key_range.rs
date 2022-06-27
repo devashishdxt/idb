@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbKeyRange;
 
@@ -81,14 +79,6 @@ impl KeyRange {
         self.inner
             .includes(value)
             .map_err(Error::KeyRangeIncludesFailed)
-    }
-}
-
-impl Deref for KeyRange {
-    type Target = IdbKeyRange;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

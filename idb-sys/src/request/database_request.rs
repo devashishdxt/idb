@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, EventTarget, IdbOpenDbRequest, IdbVersionChangeEvent};
@@ -108,14 +106,6 @@ impl TryFrom<EventTarget> for DatabaseRequest {
             .dyn_into::<IdbOpenDbRequest>()
             .map(Into::into)
             .map_err(|value| Error::UnexpectedJsType("IdbOpenDbRequest", value))
-    }
-}
-
-impl Deref for DatabaseRequest {
-    type Target = IdbOpenDbRequest;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

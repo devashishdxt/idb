@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::{KeyPath, ObjectStore as SysObjectStore};
 use js_sys::Array;
 use wasm_bindgen::JsValue;
@@ -166,14 +164,6 @@ impl ObjectStore {
     /// transaction.
     pub fn delete_index(&self, name: &str) -> Result<(), Error> {
         self.inner.delete_index(name).map_err(Into::into)
-    }
-}
-
-impl Deref for ObjectStore {
-    type Target = SysObjectStore;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

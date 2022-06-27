@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::DatabaseRequest;
 use wasm_bindgen::JsValue;
 use web_sys::EventTarget;
@@ -40,14 +38,6 @@ impl TryFrom<EventTarget> for OpenRequest {
     fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
         let inner = target.try_into()?;
         Ok(Self { inner })
-    }
-}
-
-impl Deref for OpenRequest {
-    type Target = DatabaseRequest;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::Cursor as SysCursor;
 use js_sys::Object;
 use wasm_bindgen::JsValue;
@@ -68,14 +66,6 @@ impl Cursor {
         let request = self.inner.delete()?;
         let _: JsValue = wait_request(request).await?;
         Ok(())
-    }
-}
-
-impl Deref for Cursor {
-    type Target = SysCursor;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

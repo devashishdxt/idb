@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::Database as SysDatabase;
 use wasm_bindgen::JsValue;
 use web_sys::{Event, EventTarget};
@@ -56,7 +54,7 @@ impl Database {
     pub fn create_object_store(
         &self,
         name: &str,
-        params: &ObjectStoreParams,
+        params: ObjectStoreParams,
     ) -> Result<ObjectStore, Error> {
         self.inner
             .create_object_store(name, params)
@@ -98,14 +96,6 @@ impl TryFrom<EventTarget> for Database {
     fn try_from(target: EventTarget) -> Result<Self, Self::Error> {
         let inner = target.try_into()?;
         Ok(Self { inner })
-    }
-}
-
-impl Deref for Database {
-    type Target = SysDatabase;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

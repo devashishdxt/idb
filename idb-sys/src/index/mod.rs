@@ -2,8 +2,6 @@ mod index_params;
 
 pub use self::index_params::IndexParams;
 
-use std::ops::Deref;
-
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbIndex;
 
@@ -200,14 +198,6 @@ impl Index {
                 .map(Into::into)
                 .map_err(Error::OpenCursorFailed),
         }
-    }
-}
-
-impl Deref for Index {
-    type Target = IdbIndex;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

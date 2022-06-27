@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use js_sys::Reflect;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbFactory;
@@ -40,14 +38,6 @@ impl Factory {
             .delete_database(name)
             .map(Into::into)
             .map_err(Error::IndexedDbDeleteFailed)
-    }
-}
-
-impl Deref for Factory {
-    type Target = IdbFactory;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

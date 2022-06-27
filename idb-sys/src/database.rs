@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use js_sys::Array;
 use num_traits::ToPrimitive;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
@@ -72,10 +70,10 @@ impl Database {
     pub fn create_object_store(
         &self,
         name: &str,
-        params: &ObjectStoreParams,
+        params: ObjectStoreParams,
     ) -> Result<ObjectStore, Error> {
         self.inner
-            .create_object_store_with_optional_parameters(name, params)
+            .create_object_store_with_optional_parameters(name, &params.into())
             .map(Into::into)
             .map_err(Error::ObjectStoreCreateFailed)
     }
@@ -141,14 +139,6 @@ impl TryFrom<EventTarget> for Database {
             .dyn_into::<IdbDatabase>()
             .map(Into::into)
             .map_err(|value| Error::UnexpectedJsType("IdbDatabase", value))
-    }
-}
-
-impl Deref for Database {
-    type Target = IdbDatabase;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

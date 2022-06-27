@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use js_sys::Object;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, EventTarget, IdbRequest};
@@ -65,14 +63,6 @@ impl TryFrom<EventTarget> for StoreRequest {
             .dyn_into::<IdbRequest>()
             .map(Into::into)
             .map_err(|value| Error::UnexpectedJsType("IdbRequest", value))
-    }
-}
-
-impl Deref for StoreRequest {
-    type Target = IdbRequest;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

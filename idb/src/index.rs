@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::{CursorDirection, Index as SysIndex, KeyPath};
 use js_sys::Array;
 use wasm_bindgen::JsValue;
@@ -115,14 +113,6 @@ impl Index {
             .inner
             .open_key_cursor(query.map(Into::into), cursor_direction)?;
         wait_request(request).await
-    }
-}
-
-impl Deref for Index {
-    type Target = SysIndex;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

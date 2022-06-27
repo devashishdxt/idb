@@ -61,7 +61,7 @@ async fn create_db() -> Result<Database, Error> {
         employees_params
             .key_path(Some(KeyPath::new_single("id")))
             .auto_increment(true);
-        let employees = database.create_object_store("employees", &employees_params);
+        let employees = database.create_object_store("employees", employees_params);
         assert!(employees.is_ok());
         let employees = employees.unwrap();
 
@@ -78,13 +78,13 @@ async fn create_db() -> Result<Database, Error> {
         // Create departments object store
         let mut departments_params = ObjectStoreParams::new();
         departments_params.auto_increment(true);
-        let departments = database.create_object_store("departments", &departments_params);
+        let departments = database.create_object_store("departments", departments_params);
         assert!(departments.is_ok());
 
         // Create invoices object store
         let mut invoices_params = ObjectStoreParams::new();
         invoices_params.key_path(Some(KeyPath::new_array(["id", "year"])));
-        let invoices = database.create_object_store("invoices", &invoices_params);
+        let invoices = database.create_object_store("invoices", invoices_params);
         assert!(invoices.is_ok());
         let invoices = invoices.unwrap();
 

@@ -26,13 +26,13 @@ async fn test_database_store_names() {
         let database = event.database().unwrap();
 
         database
-            .create_object_store("store1", &ObjectStoreParams::new())
+            .create_object_store("store1", ObjectStoreParams::new())
             .unwrap();
         database
-            .create_object_store("store2", &ObjectStoreParams::new())
+            .create_object_store("store2", ObjectStoreParams::new())
             .unwrap();
         database
-            .create_object_store("store3", &ObjectStoreParams::new())
+            .create_object_store("store3", ObjectStoreParams::new())
             .unwrap();
     });
 
@@ -58,13 +58,13 @@ async fn test_database_transaction() {
         let database = event.database().unwrap();
 
         database
-            .create_object_store("store1", &ObjectStoreParams::new())
+            .create_object_store("store1", ObjectStoreParams::new())
             .unwrap();
         database
-            .create_object_store("store2", &ObjectStoreParams::new())
+            .create_object_store("store2", ObjectStoreParams::new())
             .unwrap();
         database
-            .create_object_store("store3", &ObjectStoreParams::new())
+            .create_object_store("store3", ObjectStoreParams::new())
             .unwrap();
     });
 
@@ -106,13 +106,13 @@ async fn test_database_delete_object_store() {
         let database = event.database().unwrap();
 
         database
-            .create_object_store("store1", &ObjectStoreParams::new())
+            .create_object_store("store1", ObjectStoreParams::new())
             .unwrap();
         database
-            .create_object_store("store2", &ObjectStoreParams::new())
+            .create_object_store("store2", ObjectStoreParams::new())
             .unwrap();
         database
-            .create_object_store("store3", &ObjectStoreParams::new())
+            .create_object_store("store3", ObjectStoreParams::new())
             .unwrap();
     });
 

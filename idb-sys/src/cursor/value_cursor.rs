@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use js_sys::Object;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbCursorWithValue;
@@ -86,14 +84,6 @@ impl Cursor {
             .delete()
             .map(Into::into)
             .map_err(Error::DeleteFailed)
-    }
-}
-
-impl Deref for Cursor {
-    type Target = IdbCursorWithValue;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

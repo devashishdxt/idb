@@ -2,8 +2,6 @@ mod transaction_mode;
 
 pub use self::transaction_mode::TransactionMode;
 
-use std::ops::Deref;
-
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{DomException, Event, EventTarget, IdbTransaction};
 
@@ -108,14 +106,6 @@ impl TryFrom<EventTarget> for Transaction {
             .dyn_into::<IdbTransaction>()
             .map(Into::into)
             .map_err(|value| Error::UnexpectedJsType("IdbTransaction", value))
-    }
-}
-
-impl Deref for Transaction {
-    type Target = IdbTransaction;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

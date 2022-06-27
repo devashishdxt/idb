@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::Factory as SysFactory;
 use wasm_bindgen::JsValue;
 
@@ -35,14 +33,6 @@ impl Factory {
         let request = self.inner.delete(name)?;
         let _: JsValue = wait_request(request).await?;
         Ok(())
-    }
-}
-
-impl Deref for Factory {
-    type Target = SysFactory;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

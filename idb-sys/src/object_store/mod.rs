@@ -3,8 +3,6 @@ mod object_store_params;
 
 pub use self::{key_path::KeyPath, object_store_params::ObjectStoreParams};
 
-use std::ops::Deref;
-
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbObjectStore;
 
@@ -267,7 +265,7 @@ impl ObjectStore {
                 .create_index_with_str_sequence_and_optional_parameters(
                     name,
                     &key_path.into(),
-                    &params,
+                    &params.into(),
                 ),
         }
         .map(Into::into)
@@ -280,14 +278,6 @@ impl ObjectStore {
         self.inner
             .delete_index(name)
             .map_err(Error::IndexDeleteFailed)
-    }
-}
-
-impl Deref for ObjectStore {
-    type Target = IdbObjectStore;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

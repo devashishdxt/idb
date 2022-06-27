@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbIndexParameters;
 
@@ -27,14 +25,6 @@ impl IndexParams {
     pub fn multi_entry(&mut self, multi_entry: bool) -> &mut Self {
         self.inner.multi_entry(multi_entry);
         self
-    }
-}
-
-impl Deref for IndexParams {
-    type Target = IdbIndexParameters;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use idb_sys::KeyCursor as SysKeyCursor;
 use js_sys::Object;
 use wasm_bindgen::JsValue;
@@ -63,14 +61,6 @@ impl KeyCursor {
         let request = self.inner.delete()?;
         let _: JsValue = wait_request(request).await?;
         Ok(())
-    }
-}
-
-impl Deref for KeyCursor {
-    type Target = SysKeyCursor;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
     }
 }
 

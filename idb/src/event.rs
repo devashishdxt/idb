@@ -1,7 +1,6 @@
-use std::ops::Deref;
-
 use idb_sys::{DatabaseRequest, Request, VersionChangeEvent as SysVersionChangeEvent};
 use wasm_bindgen::JsValue;
+use web_sys::EventTarget;
 
 use crate::{Database, Error, Transaction};
 
@@ -37,13 +36,10 @@ impl VersionChangeEvent {
 
         Ok(request.transaction().map(Into::into))
     }
-}
 
-impl Deref for VersionChangeEvent {
-    type Target = SysVersionChangeEvent;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
+    /// Returns event target for current event
+    pub fn target(&self) -> Option<EventTarget> {
+        self.inner.target()
     }
 }
 
