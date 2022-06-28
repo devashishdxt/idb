@@ -17,5 +17,6 @@ web-sys = { version = "0.3.58", features = ["Event"] }
 [dev-dependencies]
 serde = { version = "1.0.137", features = ["derive"] }
 serde-wasm-bindgen = "0.4.3"
+serde_json = "1.0.81"
 wasm-bindgen-test = "0.3.31"
 web-sys = { version = "0.3.58", features = ["console"] }
