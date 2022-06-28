@@ -2,7 +2,7 @@ use idb::Factory;
 use wasm_bindgen_test::wasm_bindgen_test;
 
 #[wasm_bindgen_test]
-fn test_factory_new_pass() {
+fn test_factory_new() {
     let factory = Factory::new();
     assert!(
         factory.is_ok(),
@@ -12,7 +12,7 @@ fn test_factory_new_pass() {
 }
 
 #[wasm_bindgen_test]
-async fn test_factory_open_delete_pass() {
+async fn test_factory_open_delete() {
     let factory = Factory::new().unwrap();
 
     let open_request = factory.open("test", 1);

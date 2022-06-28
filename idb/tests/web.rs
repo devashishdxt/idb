@@ -1,6 +1,7 @@
 mod database;
 mod factory;
 mod open_request;
+mod transaction;
 
 use idb::{
     Database, Error, Factory, IndexParams, KeyPath, KeyRange, ObjectStoreParams, TransactionMode,
