@@ -307,3 +307,71 @@ async fn test_object_store_crud() {
     database.close();
     factory.delete("test").await.unwrap();
 }
+
+#[wasm_bindgen_test]
+async fn test_duplicate_add_fail() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").await.unwrap();
+
+    let mut open_request = factory.open("test", 1).unwrap();
+    open_request.on_upgrade_needed(|event| {
+        let database = event.database().unwrap();
+
+        let mut store_params = ObjectStoreParams::new();
+        store_params.key_path(Some(KeyPath::new_single("id")));
+
+        let store = database
+            .create_object_store("employees", store_params)
+            .unwrap();
+
+        let mut index_params = IndexParams::new();
+        index_params.unique(true);
+
+        store
+            .create_index("email", KeyPath::new_single("email"), Some(index_params))
+            .unwrap();
+    });
+
+    let database = open_request.into_future().await.unwrap();
+
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadWrite)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    let employee = serde_json::json!({
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+    });
+    store
+        .add(
+            &employee.serialize(&Serializer::json_compatible()).unwrap(),
+            None,
+        )
+        .await
+        .unwrap();
+
+    let employee = serde_json::json!({
+        "id": 1,
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+    });
+
+    let error = store
+        .add(
+            &employee.serialize(&Serializer::json_compatible()).unwrap(),
+            None,
+        )
+        .await;
+
+    assert!(
+        error.is_err(),
+        "adding duplicate id should fail: {}",
+        error.unwrap_err()
+    );
+
+    database.close();
+    factory.delete("test").await.unwrap();
+}
