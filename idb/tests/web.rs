@@ -1,5 +1,6 @@
 mod database;
 mod factory;
+mod index;
 mod object_store;
 mod open_request;
 mod transaction;
