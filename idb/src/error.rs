@@ -8,6 +8,10 @@ use web_sys::DomException;
 /// Error type for [`idb`](crate) crate.
 #[derive(Debug, Error, PartialEq)]
 pub enum Error {
+    /// Cursor is finished.
+    #[error("cursor is finished")]
+    CursorFinished,
+
     /// DOM exception
     #[error("DOM exception: {}", js_object_display(.0))]
     DomException(DomException),

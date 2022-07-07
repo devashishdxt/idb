@@ -1,3 +1,4 @@
+mod cursor;
 mod database;
 mod factory;
 mod index;
