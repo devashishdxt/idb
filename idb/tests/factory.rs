@@ -22,7 +22,7 @@ async fn test_factory_open_delete() {
         open_request.unwrap_err()
     );
 
-    let database = open_request.unwrap().into_future().await;
+    let database = open_request.unwrap().await;
     assert!(
         database.is_ok(),
         "OpenRequest::into_future() should be Ok(): {}",
