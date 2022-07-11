@@ -29,7 +29,7 @@ async fn test_cursor_next_advance_and_get() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     // Insert multiple values
     let transaction = database
@@ -137,7 +137,7 @@ async fn test_cursor_delete() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     // Insert multiple values
     let transaction = database

@@ -81,7 +81,7 @@ pub async fn wait_transaction_abort(transaction: &mut Transaction) -> Result<(),
         .map_err(|_| Error::OneshotChannelReceiveError)
 }
 
-fn success_callback<T, E>(event: Event) -> Result<T, Error>
+pub fn success_callback<T, E>(event: Event) -> Result<T, Error>
 where
     T: TryFrom<JsValue, Error = E>,
     E: Into<Error>,
@@ -94,7 +94,7 @@ where
         .and_then(|js_value| TryInto::try_into(js_value).map_err(Into::into))
 }
 
-fn error_callback<T>(event: Event) -> Result<T, Error> {
+pub fn error_callback<T>(event: Event) -> Result<T, Error> {
     let request = StoreRequest::try_from(event.target().ok_or(Error::EventTargetNotFound)?)?;
 
     let error = request.error()?;

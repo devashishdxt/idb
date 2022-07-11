@@ -8,7 +8,7 @@ To use `idb`, you need to add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-idb = "0.1"
+idb = "0.2"
 ```
 
 ### Example
@@ -51,7 +51,7 @@ async fn create_database() -> Result<Database, Error> {
     });
 
     // `await` the future returned by `open_request.into_future()` (which returns the database instance)
-    open_request.into_future().await
+    open_request.await
 }
 ```
 

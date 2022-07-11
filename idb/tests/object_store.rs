@@ -29,7 +29,7 @@ async fn test_object_store_metadata() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     let transaction = database
         .transaction(&["employees"], TransactionMode::ReadOnly)
@@ -80,7 +80,7 @@ async fn test_object_store_crud() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     // Add a value to store
     let transaction = database
@@ -332,7 +332,7 @@ async fn test_duplicate_add_fail() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     let transaction = database
         .transaction(&["employees"], TransactionMode::ReadWrite)

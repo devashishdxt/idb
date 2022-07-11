@@ -1,8 +1,18 @@
-use idb_sys::DatabaseRequest;
+use std::{
+    future::{Future, IntoFuture},
+    pin::Pin,
+    task::{Context, Poll},
+};
+
+use idb_sys::{DatabaseRequest, Request};
+use tokio::sync::oneshot;
 use wasm_bindgen::JsValue;
 use web_sys::EventTarget;
 
-use crate::{utils::wait_request, Database, Error, VersionChangeEvent};
+use crate::{
+    utils::{error_callback, success_callback},
+    Database, Error, VersionChangeEvent,
+};
 
 /// Request returned by [`Factory`](crate::Factory) when opening a database.
 #[derive(Debug)]
@@ -25,11 +35,6 @@ impl OpenRequest {
         F: FnOnce(VersionChangeEvent) + 'static,
     {
         self.inner.on_upgrade_needed(|event| callback(event.into()))
-    }
-
-    /// Returns a future which resolves when the database is opened.
-    pub async fn into_future(self) -> Result<Database, Error> {
-        wait_request(self.inner).await
     }
 }
 
@@ -66,5 +71,61 @@ impl TryFrom<JsValue> for OpenRequest {
 impl From<OpenRequest> for JsValue {
     fn from(open_request: OpenRequest) -> Self {
         open_request.inner.into()
+    }
+}
+
+pub struct OpenRequestFuture {
+    _inner: DatabaseRequest,
+    error_receiver: oneshot::Receiver<<Self as Future>::Output>,
+    success_receiver: oneshot::Receiver<<Self as Future>::Output>,
+}
+
+impl Future for OpenRequestFuture {
+    type Output = Result<Database, Error>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.get_mut();
+
+        if let Poll::Ready(result) = Pin::new(&mut this.error_receiver).poll(cx) {
+            return match result {
+                Ok(result) => Poll::Ready(result),
+                Err(_) => Poll::Ready(Err(Error::OneshotChannelReceiveError)),
+            };
+        }
+
+        if let Poll::Ready(result) = Pin::new(&mut this.success_receiver).poll(cx) {
+            return match result {
+                Ok(result) => Poll::Ready(result),
+                Err(_) => Poll::Ready(Err(Error::OneshotChannelReceiveError)),
+            };
+        }
+
+        Poll::Pending
+    }
+}
+
+impl IntoFuture for OpenRequest {
+    type Output = <OpenRequestFuture as Future>::Output;
+
+    type IntoFuture = OpenRequestFuture;
+
+    fn into_future(mut self) -> Self::IntoFuture {
+        let (error_sender, error_receiver) = oneshot::channel::<Self::Output>();
+        let (success_sender, success_receiver) = oneshot::channel::<Self::Output>();
+
+        self.inner.on_error(move |event| {
+            let res = error_callback(event);
+            let _ = error_sender.send(res);
+        });
+        self.inner.on_success(move |event| {
+            let res = success_callback(event);
+            let _ = success_sender.send(res);
+        });
+
+        OpenRequestFuture {
+            _inner: self.inner,
+            error_receiver,
+            success_receiver,
+        }
     }
 }
