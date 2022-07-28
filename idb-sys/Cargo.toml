@@ -14,11 +14,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-js-sys = "0.3.58"
+js-sys = "0.3.59"
 num-traits = "0.2.15"
 thiserror = "1.0.31"
-wasm-bindgen = "0.2.81"
-web-sys = { version = "0.3.58", features = [
+wasm-bindgen = "0.2.82"
+web-sys = { version = "0.3.59", features = [
     "DomException",
     "DomStringList",
     "Event",
