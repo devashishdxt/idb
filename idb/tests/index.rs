@@ -30,7 +30,7 @@ async fn test_index_read() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     // Insert multiple values
     let transaction = database

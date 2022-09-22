@@ -15,7 +15,7 @@ async fn test_transaction_commit() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     let transaction = database
         .transaction(&["store1"], TransactionMode::ReadWrite)
@@ -77,7 +77,7 @@ async fn test_transaction_abort() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     let transaction = database
         .transaction(&["store1"], TransactionMode::ReadWrite)
@@ -127,7 +127,7 @@ async fn test_transaction_error() {
             .unwrap();
     });
 
-    let mut database = open_request.into_future().await.unwrap();
+    let mut database = open_request.await.unwrap();
     database.on_version_change(|database| {
         database.close();
     });
@@ -154,7 +154,7 @@ async fn test_transaction_error() {
             .unwrap();
     });
 
-    let database = open_request.into_future().await.unwrap();
+    let database = open_request.await.unwrap();
 
     let error = transaction.commit().await;
     assert!(error.is_err(), "commit should fail"); // Note that the value may still get committed to the store depending on indexedDB implementation on the browser

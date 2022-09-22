@@ -7,7 +7,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! idb = "0.1"
+//! idb = "0.2"
 //! ```
 //!
 //! ## Example
@@ -50,7 +50,7 @@
 //!     });
 //!
 //!     // `await` the future returned by `open_request.into_future()` (which returns the database instance)
-//!     open_request.into_future().await
+//!     open_request.await
 //! }
 //! ```
 //!
