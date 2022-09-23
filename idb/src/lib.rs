@@ -49,7 +49,7 @@
 //!             .unwrap();
 //!     });
 //!
-//!     // `await` the future returned by `open_request.into_future()` (which returns the database instance)
+//!     // `await` open request
 //!     open_request.await
 //! }
 //! ```

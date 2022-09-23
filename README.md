@@ -50,7 +50,7 @@ async fn create_database() -> Result<Database, Error> {
             .unwrap();
     });
 
-    // `await` the future returned by `open_request.into_future()` (which returns the database instance)
+    // `await` open request
     open_request.await
 }
 ```
