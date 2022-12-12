@@ -39,6 +39,10 @@ pub enum Error {
     /// Unexpected JS type
     #[error("unexpected JS type. expected: {}, found: {}", .0, js_object_display(.1))]
     UnexpectedJsType(&'static str, JsValue),
+
+    /// Unexpected JS value
+    #[error("unexpected JS value. expected: {}, found: {}", .0, js_object_display(.1))]
+    UnexpectedJsValue(&'static str, JsValue),
 }
 
 fn js_object_display(option: &JsValue) -> String {

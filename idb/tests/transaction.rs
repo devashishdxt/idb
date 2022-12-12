@@ -55,7 +55,7 @@ async fn test_transaction_commit() {
         .get(serde_wasm_bindgen::to_value("world").unwrap())
         .await;
     assert!(value.is_ok(), "value should be ok: {}", value.unwrap_err());
-    let value = value.unwrap();
+    let value = value.unwrap().unwrap();
 
     assert_eq!(value, serde_wasm_bindgen::to_value("hello").unwrap());
 

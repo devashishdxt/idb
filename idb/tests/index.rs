@@ -92,7 +92,7 @@ async fn test_index_read() {
         "stored employee 1 should be ok: {}",
         stored_employee1.unwrap_err()
     );
-    let stored_employee1 = stored_employee1.unwrap();
+    let stored_employee1 = stored_employee1.unwrap().unwrap();
 
     let stored_employee1: Value = serde_wasm_bindgen::from_value(stored_employee1).unwrap();
 
@@ -109,7 +109,7 @@ async fn test_index_read() {
         "stored employee 2 should be ok: {}",
         stored_employee2.unwrap_err()
     );
-    let stored_employee2 = stored_employee2.unwrap();
+    let stored_employee2 = stored_employee2.unwrap().unwrap();
 
     let stored_employee2: Value = serde_wasm_bindgen::from_value(stored_employee2).unwrap();
 
