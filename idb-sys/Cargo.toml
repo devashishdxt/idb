@@ -1,6 +1,6 @@
 [package]
 name = "idb-sys"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Devashish Dixit <devashishdxt@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "A callback based crate for interacting with IndexedDB on browsers using webassembly"

@@ -8,7 +8,7 @@ To use `idb`, you need to add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-idb = "0.2"
+idb = "0.3"
 ```
 
 ### Example
@@ -93,7 +93,7 @@ async fn add_data(database: &Database) -> Result<JsValue, Error> {
 To get data from an object store, you can use `ObjectStore::get`:
 
 ```rust
-async fn get_data(database: &Database, id: JsValue) -> Result<serde_json::Value, Error> {
+async fn get_data(database: &Database, id: JsValue) -> Result<Option<serde_json::Value>, Error> {
     // Create a read-only transaction
     let transaction = database
         .transaction(&["employees"], TransactionMode::ReadOnly)
@@ -103,10 +103,11 @@ async fn get_data(database: &Database, id: JsValue) -> Result<serde_json::Value,
     let store = transaction.object_store("employees").unwrap();
 
     // Get the stored data
-    let stored_employee = store.get(id).await?;
+    let stored_employee: Option<JsValue> = store.get(id).await?;
 
     // Deserialize the stored data
-    let stored_employee: serde_json::Value = serde_wasm_bindgen::from_value(stored_employee).unwrap();
+    let stored_employee: Option<serde_json::Value> = stored_employee
+        .map(|stored_employee| serde_wasm_bindgen::from_value(stored_employee).unwrap());
 
     // Wait for the transaction to complete
     transaction.done().await?;
