@@ -118,7 +118,9 @@ impl IntoFuture for OpenRequest {
             let _ = error_sender.send(res);
         });
         self.inner.on_success(move |event| {
-            let res = success_callback(event);
+            let res = success_callback(event).and_then(|optional: Option<Database>| {
+                optional.ok_or(Error::UnexpectedJsValue("database", JsValue::NULL))
+            });
             let _ = success_sender.send(res);
         });
 

@@ -122,7 +122,7 @@ async fn test_object_store_crud() {
         "stored employee should be ok: {}",
         stored_employee.unwrap_err()
     );
-    let stored_employee = stored_employee.unwrap();
+    let stored_employee = stored_employee.unwrap().unwrap();
 
     let stored_employee: Value = serde_wasm_bindgen::from_value(stored_employee).unwrap();
 
@@ -173,7 +173,7 @@ async fn test_object_store_crud() {
         "stored employee should be ok: {}",
         stored_employee.unwrap_err()
     );
-    let stored_employee = stored_employee.unwrap();
+    let stored_employee = stored_employee.unwrap().unwrap();
 
     let stored_employee: Value = serde_wasm_bindgen::from_value(stored_employee).unwrap();
 

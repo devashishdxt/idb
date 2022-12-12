@@ -1,5 +1,4 @@
 use idb_sys::{KeyPath, ObjectStore as SysObjectStore};
-use js_sys::Array;
 use wasm_bindgen::JsValue;
 
 use crate::{
@@ -47,37 +46,41 @@ impl ObjectStore {
     /// Adds or updates a record in store with the given value and key.
     pub async fn put(&self, value: &JsValue, key: Option<&JsValue>) -> Result<JsValue, Error> {
         let request = self.inner.put(value, key)?;
-        wait_request(request).await
+        wait_request(request)
+            .await?
+            .ok_or(Error::UnexpectedJsValue("key on put", JsValue::NULL))
     }
 
     /// Adds a record in store with the given value and key.
     pub async fn add(&self, value: &JsValue, key: Option<&JsValue>) -> Result<JsValue, Error> {
         let request = self.inner.add(value, key)?;
-        wait_request(request).await
+        wait_request(request)
+            .await?
+            .ok_or(Error::UnexpectedJsValue("key on add", JsValue::NULL))
     }
 
     /// Deletes records in store with the given key or in the given key range in query.
     pub async fn delete(&self, query: impl Into<Query>) -> Result<(), Error> {
         let request = self.inner.delete(query.into())?;
-        let _: JsValue = wait_request(request).await?;
+        let _: Option<JsValue> = wait_request(request).await?;
         Ok(())
     }
 
     /// Deletes all records in store.
     pub async fn clear(&self) -> Result<(), Error> {
         let request = self.inner.clear()?;
-        let _: JsValue = wait_request(request).await?;
+        let _: Option<JsValue> = wait_request(request).await?;
         Ok(())
     }
 
     /// Retrieves the value of the first record matching the given key or key range in query.
-    pub async fn get(&self, query: impl Into<Query>) -> Result<JsValue, Error> {
+    pub async fn get(&self, query: impl Into<Query>) -> Result<Option<JsValue>, Error> {
         let request = self.inner.get(query.into())?;
         wait_request(request).await
     }
 
     /// Retrieves the key of the first record matching the given key or key range in query.
-    pub async fn get_key(&self, query: impl Into<Query>) -> Result<JsValue, Error> {
+    pub async fn get_key(&self, query: impl Into<Query>) -> Result<Option<JsValue>, Error> {
         let request = self.inner.get_key(query.into())?;
         wait_request(request).await
     }
@@ -89,8 +92,9 @@ impl ObjectStore {
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all(query.map(Into::into), limit)?;
-        let array: Array = wait_request(request).await?;
-        Ok(array_to_vec(array))
+        let array = wait_request(request).await?;
+
+        Ok(array.map(array_to_vec).unwrap_or_default())
     }
 
     /// Retrieves the keys of records matching the given key or key range in query (up to limit if given).
@@ -100,19 +104,23 @@ impl ObjectStore {
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all_keys(query.map(Into::into), limit)?;
-        let array: Array = wait_request(request).await?;
-        Ok(array_to_vec(array))
+        let array = wait_request(request).await?;
+
+        Ok(array.map(array_to_vec).unwrap_or_default())
     }
 
     /// Retrieves the number of records matching the given key or key range in query.
     pub async fn count(&self, query: Option<Query>) -> Result<u32, Error> {
         let request = self.inner.count(query.map(Into::into))?;
-        let value: JsValue = wait_request(request).await?;
+        let js_value: Option<JsValue> = wait_request(request).await?;
 
-        value
-            .as_f64()
-            .and_then(num_traits::cast)
-            .ok_or(Error::UnexpectedJsType("u32", value))
+        match js_value {
+            None => Ok(0),
+            Some(js_value) => js_value
+                .as_f64()
+                .and_then(num_traits::cast)
+                .ok_or(Error::UnexpectedJsType("u32", js_value)),
+        }
     }
 
     /// Opens a [`Cursor`](crate::Cursor) over the records matching query, ordered by direction. If query is `None`,
@@ -121,7 +129,7 @@ impl ObjectStore {
         &self,
         query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
-    ) -> Result<Cursor, Error> {
+    ) -> Result<Option<Cursor>, Error> {
         let request = self
             .inner
             .open_cursor(query.map(Into::into), cursor_direction)?;
@@ -134,7 +142,7 @@ impl ObjectStore {
         &self,
         query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
-    ) -> Result<KeyCursor, Error> {
+    ) -> Result<Option<KeyCursor>, Error> {
         let request = self
             .inner
             .open_key_cursor(query.map(Into::into), cursor_direction)?;

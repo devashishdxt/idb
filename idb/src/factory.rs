@@ -31,7 +31,7 @@ impl Factory {
     /// close in response to a `versionchange` event, the request will be blocked until they all close.
     pub async fn delete(&self, name: &str) -> Result<(), Error> {
         let request = self.inner.delete(name)?;
-        let _: JsValue = wait_request(request).await?;
+        let _: Option<JsValue> = wait_request(request).await?;
         Ok(())
     }
 }

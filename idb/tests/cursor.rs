@@ -74,6 +74,7 @@ async fn test_cursor_next_advance_and_get() {
     let mut cursor = store
         .open_cursor(None, Some(CursorDirection::Next))
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(Ok(id1.clone()), cursor.key());
@@ -96,6 +97,7 @@ async fn test_cursor_next_advance_and_get() {
     let mut cursor = store
         .open_cursor(None, Some(CursorDirection::Next))
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(Ok(id1), cursor.key());
@@ -182,6 +184,7 @@ async fn test_cursor_delete() {
     let mut cursor = store
         .open_cursor(None, Some(CursorDirection::Next))
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(Ok(id1.clone()), cursor.key());
@@ -209,4 +212,40 @@ async fn test_cursor_delete() {
 
     database.close();
     factory.delete("test").await.unwrap();
+}
+
+#[wasm_bindgen_test]
+async fn test_cursor_with_zero_matches() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").await.unwrap();
+
+    let mut open_request = factory.open("test", 1).unwrap();
+    open_request.on_upgrade_needed(|event| {
+        let database = event.database().unwrap();
+
+        let mut store_params = ObjectStoreParams::new();
+        store_params.auto_increment(true);
+        store_params.key_path(Some(KeyPath::new_single("id")));
+
+        let store = database
+            .create_object_store("employees", store_params)
+            .unwrap();
+
+        let mut index_params = IndexParams::new();
+        index_params.unique(true);
+
+        store
+            .create_index("email", KeyPath::new_single("email"), Some(index_params))
+            .unwrap();
+    });
+
+    let database = open_request.await.unwrap();
+
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    assert!(store.open_cursor(None, None).await.unwrap().is_none());
 }

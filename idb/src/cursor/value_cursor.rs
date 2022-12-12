@@ -59,13 +59,14 @@ impl Cursor {
         let request = self.inner.request();
 
         self.inner.advance(count)?;
-        let cursor: JsValue = wait_request(request).await?;
+        let cursor: Option<JsValue> = wait_request(request).await?;
 
-        if cursor.is_null() {
-            self.finished = true;
-        } else {
-            let inner = SysCursor::try_from(cursor)?;
-            self.inner = inner;
+        match cursor {
+            None => self.finished = true,
+            Some(cursor) => {
+                let inner = SysCursor::try_from(cursor)?;
+                self.inner = inner;
+            }
         }
 
         Ok(())
@@ -80,13 +81,14 @@ impl Cursor {
         let request = self.inner.request();
 
         self.inner.next(key)?;
-        let cursor: JsValue = wait_request(request).await?;
+        let cursor: Option<JsValue> = wait_request(request).await?;
 
-        if cursor.is_null() {
-            self.finished = true;
-        } else {
-            let inner = SysCursor::try_from(cursor)?;
-            self.inner = inner;
+        match cursor {
+            None => self.finished = true,
+            Some(cursor) => {
+                let inner = SysCursor::try_from(cursor)?;
+                self.inner = inner;
+            }
         }
 
         Ok(())
@@ -106,13 +108,14 @@ impl Cursor {
         let request = self.inner.request();
 
         self.inner.next_primary_key(key, primary_key)?;
-        let cursor: JsValue = wait_request(request).await?;
+        let cursor: Option<JsValue> = wait_request(request).await?;
 
-        if cursor.is_null() {
-            self.finished = true;
-        } else {
-            let inner = SysCursor::try_from(cursor)?;
-            self.inner = inner;
+        match cursor {
+            None => self.finished = true,
+            Some(cursor) => {
+                let inner = SysCursor::try_from(cursor)?;
+                self.inner = inner;
+            }
         }
 
         Ok(())
@@ -125,7 +128,10 @@ impl Cursor {
         }
 
         let request = self.inner.update(value)?;
-        wait_request(request).await
+        wait_request(request).await?.ok_or(Error::UnexpectedJsValue(
+            "value after update",
+            JsValue::NULL,
+        ))
     }
 
     /// Delete the record pointed at by the cursor with a new value.
@@ -135,7 +141,7 @@ impl Cursor {
         }
 
         let request = self.inner.delete()?;
-        let _: JsValue = wait_request(request).await?;
+        let _: Option<JsValue> = wait_request(request).await?;
         Ok(())
     }
 }
