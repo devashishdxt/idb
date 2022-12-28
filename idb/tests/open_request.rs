@@ -7,7 +7,7 @@ async fn test_open_request_upgrade_needed() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
 
     let (sender, receiver) = oneshot::channel();
     open_request.on_upgrade_needed(move |event| {
@@ -30,10 +30,10 @@ async fn test_open_request_blocked() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let open_request = factory.open("test", 1).unwrap();
+    let open_request = factory.open("test", Some(1)).unwrap();
     let database = open_request.await.unwrap();
 
-    let mut blocking_open_request = factory.open("test", 2).unwrap();
+    let mut blocking_open_request = factory.open("test", Some(2)).unwrap();
 
     let (sender, receiver) = oneshot::channel();
     blocking_open_request.on_blocked(move |event| {

@@ -9,7 +9,7 @@ async fn test_cursor_next_advance_and_get() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -119,7 +119,7 @@ async fn test_cursor_delete() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -219,7 +219,7 @@ async fn test_cursor_with_zero_matches() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 

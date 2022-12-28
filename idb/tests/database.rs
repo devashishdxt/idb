@@ -6,7 +6,7 @@ async fn test_database_name_and_version() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let open_request = factory.open("test", 1).unwrap();
+    let open_request = factory.open("test", Some(1)).unwrap();
     let database = open_request.await.unwrap();
 
     assert_eq!(database.name(), "test");
@@ -21,7 +21,7 @@ async fn test_database_store_names() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -53,7 +53,7 @@ async fn test_database_transaction() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -101,7 +101,7 @@ async fn test_database_delete_object_store() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -119,7 +119,7 @@ async fn test_database_delete_object_store() {
     let mut database = open_request.await.unwrap();
     database.on_version_change(|database| database.close());
 
-    let mut open_request = factory.open("test", 2).unwrap();
+    let mut open_request = factory.open("test", Some(2)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 

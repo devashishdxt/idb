@@ -20,7 +20,7 @@ impl Factory {
     /// with a lower version and there are open connections that don’t close in response to a `versionchange` event, the
     /// request will be blocked until they all close, then an upgrade will occur. If the database already exists with a
     /// higher version the request will fail.
-    pub fn open(&self, name: &str, version: u32) -> Result<OpenRequest, Error> {
+    pub fn open(&self, name: &str, version: Option<u32>) -> Result<OpenRequest, Error> {
         self.inner
             .open(name, version)
             .map(Into::into)

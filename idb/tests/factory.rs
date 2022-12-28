@@ -15,7 +15,7 @@ fn test_factory_new() {
 async fn test_factory_open_delete() {
     let factory = Factory::new().unwrap();
 
-    let open_request = factory.open("test", 1);
+    let open_request = factory.open("test", None);
     assert!(
         open_request.is_ok(),
         "Factory::open() should be Ok(): {}",
