@@ -7,7 +7,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! idb = "0.3"
+//! idb = "0.4"
 //! ```
 //!
 //! ## Example
@@ -22,7 +22,7 @@
 //!     let factory = Factory::new()?;
 //!
 //!     // Create an open request for the database
-//!     let mut open_request = factory.open("test", 1).unwrap();
+//!     let mut open_request = factory.open("test", Some(1)).unwrap();
 //!
 //!     // Add an upgrade handler for database
 //!     open_request.on_upgrade_needed(|event| {
