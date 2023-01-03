@@ -24,11 +24,13 @@ impl Factory {
     /// with a lower version and there are open connections that don’t close in response to a `versionchange` event, the
     /// request will be blocked until they all close, then an upgrade will occur. If the database already exists with a
     /// higher version the request will fail.
-    pub fn open(&self, name: &str, version: u32) -> Result<DatabaseRequest, Error> {
-        self.inner
-            .open_with_u32(name, version)
-            .map(Into::into)
-            .map_err(Error::IndexedDbOpenFailed)
+    pub fn open(&self, name: &str, version: Option<u32>) -> Result<DatabaseRequest, Error> {
+        match version {
+            Some(version) => self.inner.open_with_u32(name, version),
+            None => self.inner.open(name),
+        }
+        .map(Into::into)
+        .map_err(Error::IndexedDbOpenFailed)
     }
 
     /// Attempts to delete the named database. If the database already exists and there are open connections that don’t

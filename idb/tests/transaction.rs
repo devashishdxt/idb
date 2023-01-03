@@ -6,7 +6,7 @@ async fn test_transaction_commit() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -68,7 +68,7 @@ async fn test_transaction_abort() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -118,7 +118,7 @@ async fn test_transaction_error() {
     let factory = Factory::new().unwrap();
     factory.delete("test").await.unwrap();
 
-    let mut open_request = factory.open("test", 1).unwrap();
+    let mut open_request = factory.open("test", Some(1)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
@@ -145,7 +145,7 @@ async fn test_transaction_error() {
         .await
         .unwrap();
 
-    let mut open_request = factory.open("test", 2).unwrap();
+    let mut open_request = factory.open("test", Some(2)).unwrap();
     open_request.on_upgrade_needed(|event| {
         let database = event.database().unwrap();
 
