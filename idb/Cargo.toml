@@ -1,6 +1,6 @@
 [package]
 name = "idb"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Devashish Dixit <devashishdxt@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "A futures based crate for interacting with IndexedDB on browsers using webassembly"
@@ -14,7 +14,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-idb-sys = { version = "0.1.0", path = "../idb-sys" }
+idb-sys = { version = "0.2.0", path = "../idb-sys" }
 js-sys = "0.3.60"
 num-traits = "0.2.15"
 thiserror = "1.0.37"
