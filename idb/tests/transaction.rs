@@ -162,3 +162,82 @@ async fn test_transaction_error() {
     database.close();
     factory.delete("test").await.unwrap();
 }
+
+#[wasm_bindgen_test]
+async fn test_transaction_read_write_in_loop() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").await.unwrap();
+
+    let mut open_request = factory.open("test", Some(1)).unwrap();
+    open_request.on_upgrade_needed(|event| {
+        let database = event.database().unwrap();
+
+        database
+            .create_object_store("store1", ObjectStoreParams::new())
+            .unwrap();
+    });
+
+    let database = open_request.await.unwrap();
+
+    // 1. Insert 10 values in database
+
+    let transaction = database
+        .transaction(&["store1"], TransactionMode::ReadWrite)
+        .unwrap();
+
+    let store = transaction.object_store("store1").unwrap();
+
+    for i in 0..10 {
+        let id = store
+            .add(
+                &serde_wasm_bindgen::to_value("hello").unwrap(),
+                Some(&serde_wasm_bindgen::to_value(&i.to_string()).unwrap()),
+            )
+            .await;
+
+        assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());
+        let id = id.unwrap();
+        assert_eq!(serde_wasm_bindgen::to_value(&i.to_string()).unwrap(), id);
+    }
+
+    let commit = transaction.commit().await;
+    assert!(
+        commit.is_ok(),
+        "commit should be ok: {}",
+        commit.unwrap_err()
+    );
+
+    // 2. Change all the values in database
+
+    let transaction = database
+        .transaction(&["store1"], TransactionMode::ReadWrite)
+        .unwrap();
+
+    let store = transaction.object_store("store1").unwrap();
+
+    for i in 0..10 {
+        let value = store
+            .get(serde_wasm_bindgen::to_value(&i.to_string()).unwrap())
+            .await;
+
+        assert!(value.is_ok(), "value should be ok: {}", value.unwrap_err());
+        let value = value.unwrap();
+
+        assert!(value.is_some(), "value should be some");
+        let value = value.unwrap();
+        assert_eq!(value, serde_wasm_bindgen::to_value("hello").unwrap());
+
+        let id = store
+            .put(
+                &serde_wasm_bindgen::to_value("hello").unwrap(),
+                Some(&serde_wasm_bindgen::to_value(&i.to_string()).unwrap()),
+            )
+            .await;
+
+        assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());
+        let id = id.unwrap();
+        assert_eq!(serde_wasm_bindgen::to_value(&i.to_string()).unwrap(), id);
+    }
+
+    transaction.commit().await.unwrap();
+}
