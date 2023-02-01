@@ -75,7 +75,7 @@ async fn test_index_read() {
     let index = store.index("email").unwrap();
 
     let count = index.count(None).await;
-    assert_eq!(count, Ok(2), "count should be 2: {:?}", count);
+    assert_eq!(count, Ok(2), "count should be 2: {count:?}");
 
     // Read values using email index
     let transaction = database
