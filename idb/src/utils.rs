@@ -81,6 +81,7 @@ pub async fn wait_transaction_abort(transaction: &mut Transaction) -> Result<(),
         .map_err(|_| Error::OneshotChannelReceiveError)
 }
 
+// TODO: return `T` instead of `Option<T>`.
 pub fn success_callback<T, E>(event: Event) -> Result<Option<T>, Error>
 where
     T: TryFrom<JsValue, Error = E>,
@@ -90,11 +91,7 @@ where
 
     let js_value = request.result()?;
 
-    if js_value.is_falsy() {
-        Ok(None)
-    } else {
-        TryInto::try_into(js_value).map(Some).map_err(Into::into)
-    }
+    TryInto::try_into(js_value).map(Some).map_err(Into::into)
 }
 
 pub fn error_callback<T>(event: Event) -> Result<T, Error> {
