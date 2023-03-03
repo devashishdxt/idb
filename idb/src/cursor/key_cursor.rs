@@ -119,10 +119,7 @@ impl KeyCursor {
         }
 
         let request = self.inner.update(value)?;
-        wait_request(request).await?.ok_or(Error::UnexpectedJsValue(
-            "value after update",
-            JsValue::NULL,
-        ))
+        wait_request(request).await
     }
 
     /// Delete the record pointed at by the cursor with a new value.
@@ -130,10 +127,8 @@ impl KeyCursor {
         if self.finished {
             return Err(Error::CursorFinished);
         }
-
         let request = self.inner.delete()?;
-        let _: Option<JsValue> = wait_request(request).await?;
-        Ok(())
+        wait_request(request).await.map(|_: JsValue| ())
     }
 }
 

@@ -6,13 +6,13 @@ use web_sys::Event;
 
 use crate::{Error, Transaction};
 
-pub async fn wait_request<T, E>(mut request: impl Request) -> Result<Option<T>, Error>
+pub async fn wait_request<T, E>(mut request: impl Request) -> Result<T, Error>
 where
     T: TryFrom<JsValue, Error = E> + 'static,
     E: Into<Error>,
 {
-    let (error_sender, error_receiver) = oneshot::channel::<Result<Option<T>, Error>>();
-    let (success_sender, success_receiver) = oneshot::channel::<Result<Option<T>, Error>>();
+    let (error_sender, error_receiver) = oneshot::channel::<Result<T, Error>>();
+    let (success_sender, success_receiver) = oneshot::channel::<Result<T, Error>>();
 
     request.on_error(move |event| {
         let res = error_callback(event);
@@ -81,8 +81,7 @@ pub async fn wait_transaction_abort(transaction: &mut Transaction) -> Result<(),
         .map_err(|_| Error::OneshotChannelReceiveError)
 }
 
-// TODO: return `T` instead of `Option<T>`.
-pub fn success_callback<T, E>(event: Event) -> Result<Option<T>, Error>
+pub fn success_callback<T, E>(event: Event) -> Result<T, Error>
 where
     T: TryFrom<JsValue, Error = E>,
     E: Into<Error>,
@@ -91,7 +90,7 @@ where
 
     let js_value = request.result()?;
 
-    TryInto::try_into(js_value).map(Some).map_err(Into::into)
+    TryInto::try_into(js_value).map_err(Into::into)
 }
 
 pub fn error_callback<T>(event: Event) -> Result<T, Error> {

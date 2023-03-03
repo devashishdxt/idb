@@ -126,12 +126,8 @@ impl Cursor {
         if self.finished {
             return Err(Error::CursorFinished);
         }
-
         let request = self.inner.update(value)?;
-        wait_request(request).await?.ok_or(Error::UnexpectedJsValue(
-            "value after update",
-            JsValue::NULL,
-        ))
+        wait_request(request).await
     }
 
     /// Delete the record pointed at by the cursor with a new value.

@@ -46,17 +46,13 @@ impl ObjectStore {
     /// Adds or updates a record in store with the given value and key.
     pub async fn put(&self, value: &JsValue, key: Option<&JsValue>) -> Result<JsValue, Error> {
         let request = self.inner.put(value, key)?;
-        wait_request(request)
-            .await?
-            .ok_or(Error::UnexpectedJsValue("key on put", JsValue::NULL))
+        wait_request(request).await
     }
 
     /// Adds a record in store with the given value and key.
     pub async fn add(&self, value: &JsValue, key: Option<&JsValue>) -> Result<JsValue, Error> {
         let request = self.inner.add(value, key)?;
-        wait_request(request)
-            .await?
-            .ok_or(Error::UnexpectedJsValue("key on add", JsValue::NULL))
+        wait_request(request).await
     }
 
     /// Deletes records in store with the given key or in the given key range in query.
@@ -92,9 +88,7 @@ impl ObjectStore {
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all(query.map(Into::into), limit)?;
-        let array = wait_request(request).await?;
-
-        Ok(array.map(array_to_vec).unwrap_or_default())
+        wait_request(request).await.map(array_to_vec)
     }
 
     /// Retrieves the keys of records matching the given key or key range in query (up to limit if given).
@@ -104,23 +98,18 @@ impl ObjectStore {
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all_keys(query.map(Into::into), limit)?;
-        let array = wait_request(request).await?;
-
-        Ok(array.map(array_to_vec).unwrap_or_default())
+        wait_request(request).await.map(array_to_vec)
     }
 
     /// Retrieves the number of records matching the given key or key range in query.
     pub async fn count(&self, query: Option<Query>) -> Result<u32, Error> {
         let request = self.inner.count(query.map(Into::into))?;
-        let js_value: Option<JsValue> = wait_request(request).await?;
+        let js_value: JsValue = wait_request(request).await?;
 
-        match js_value {
-            None => Ok(0),
-            Some(js_value) => js_value
-                .as_f64()
-                .and_then(num_traits::cast)
-                .ok_or(Error::UnexpectedJsType("u32", js_value)),
-        }
+        js_value
+            .as_f64()
+            .and_then(num_traits::cast)
+            .ok_or(Error::UnexpectedJsType("u32", js_value))
     }
 
     /// Opens a [`Cursor`](crate::Cursor) over the records matching query, ordered by direction. If query is `None`,
@@ -129,7 +118,7 @@ impl ObjectStore {
         &self,
         query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
-    ) -> Result<Option<Cursor>, Error> {
+    ) -> Result<Cursor, Error> {
         let request = self
             .inner
             .open_cursor(query.map(Into::into), cursor_direction)?;
@@ -142,7 +131,7 @@ impl ObjectStore {
         &self,
         query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
-    ) -> Result<Option<KeyCursor>, Error> {
+    ) -> Result<KeyCursor, Error> {
         let request = self
             .inner
             .open_key_cursor(query.map(Into::into), cursor_direction)?;

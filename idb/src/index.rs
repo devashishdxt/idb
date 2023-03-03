@@ -62,9 +62,7 @@ impl Index {
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all(query.map(Into::into), limit)?;
-        let array = wait_request(request).await?;
-
-        Ok(array.map(array_to_vec).unwrap_or_default())
+        wait_request(request).await.map(array_to_vec)
     }
 
     /// Retrieves the keys of records matching the given key or key range in query (up to limit if given).
@@ -74,9 +72,7 @@ impl Index {
         limit: Option<u32>,
     ) -> Result<Vec<JsValue>, Error> {
         let request = self.inner.get_all_keys(query.map(Into::into), limit)?;
-        let array = wait_request(request).await?;
-
-        Ok(array.map(array_to_vec).unwrap_or_default())
+        wait_request(request).await.map(array_to_vec)
     }
 
     /// Retrieves the number of records matching the given key or key range in query.
@@ -99,7 +95,7 @@ impl Index {
         &self,
         query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
-    ) -> Result<Option<Cursor>, Error> {
+    ) -> Result<Cursor, Error> {
         let request = self
             .inner
             .open_cursor(query.map(Into::into), cursor_direction)?;
@@ -112,7 +108,7 @@ impl Index {
         &self,
         query: Option<Query>,
         cursor_direction: Option<CursorDirection>,
-    ) -> Result<Option<KeyCursor>, Error> {
+    ) -> Result<KeyCursor, Error> {
         let request = self
             .inner
             .open_key_cursor(query.map(Into::into), cursor_direction)?;
