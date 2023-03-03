@@ -4,8 +4,8 @@ use std::{
     task::{Context, Poll},
 };
 
+use futures::channel::oneshot;
 use idb_sys::{DatabaseRequest, Request};
-use tokio::sync::oneshot;
 use wasm_bindgen::JsValue;
 use web_sys::EventTarget;
 

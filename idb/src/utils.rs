@@ -1,6 +1,6 @@
+use futures::{channel::oneshot, select};
 use idb_sys::{Request, StoreRequest, Transaction as SysTransaction};
 use js_sys::Array;
-use tokio::{select, sync::oneshot};
 use wasm_bindgen::JsValue;
 use web_sys::Event;
 
@@ -11,8 +11,8 @@ where
     T: TryFrom<JsValue, Error = E> + 'static,
     E: Into<Error>,
 {
-    let (error_sender, error_receiver) = oneshot::channel::<Result<T, Error>>();
-    let (success_sender, success_receiver) = oneshot::channel::<Result<T, Error>>();
+    let (error_sender, mut error_receiver) = oneshot::channel::<Result<T, Error>>();
+    let (success_sender, mut success_receiver) = oneshot::channel::<Result<T, Error>>();
 
     request.on_error(move |event| {
         let res = error_callback(event);
@@ -30,8 +30,8 @@ where
 }
 
 pub async fn wait_transaction(transaction: &mut Transaction) -> Result<(), Error> {
-    let (error_sender, error_receiver) = oneshot::channel::<Result<(), Error>>();
-    let (success_sender, success_receiver) = oneshot::channel::<Result<(), Error>>();
+    let (error_sender, mut error_receiver) = oneshot::channel::<Result<(), Error>>();
+    let (success_sender, mut success_receiver) = oneshot::channel::<Result<(), Error>>();
 
     transaction.inner.on_error(move |event| {
         let res = transaction_error_callback(event);
@@ -48,8 +48,8 @@ pub async fn wait_transaction(transaction: &mut Transaction) -> Result<(), Error
 }
 
 pub async fn wait_transaction_commit(transaction: &mut Transaction) -> Result<(), Error> {
-    let (error_sender, error_receiver) = oneshot::channel::<Result<(), Error>>();
-    let (success_sender, success_receiver) = oneshot::channel::<Result<(), Error>>();
+    let (error_sender, mut error_receiver) = oneshot::channel::<Result<(), Error>>();
+    let (success_sender, mut success_receiver) = oneshot::channel::<Result<(), Error>>();
 
     transaction.inner.on_error(move |event| {
         let res = transaction_error_callback(event);
