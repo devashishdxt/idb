@@ -90,7 +90,7 @@ where
 
     let js_value = request.result()?;
 
-    if js_value.is_falsy() {
+    if js_value.is_undefined() || js_value.is_null() {
         Ok(None)
     } else {
         TryInto::try_into(js_value).map(Some).map_err(Into::into)

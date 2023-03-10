@@ -2,6 +2,7 @@ use idb::{Factory, IndexParams, KeyPath, ObjectStoreParams, Query, TransactionMo
 use serde::Serialize;
 use serde_json::Value;
 use serde_wasm_bindgen::Serializer;
+use wasm_bindgen::JsValue;
 use wasm_bindgen_test::wasm_bindgen_test;
 
 #[wasm_bindgen_test]
@@ -371,6 +372,86 @@ async fn test_duplicate_add_fail() {
         "adding duplicate id should fail: {}",
         error.unwrap_err()
     );
+
+    database.close();
+    factory.delete("test").await.unwrap();
+}
+
+#[wasm_bindgen_test]
+async fn test_zero_key_get() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").await.unwrap();
+
+    let mut open_request = factory.open("test", Some(1)).unwrap();
+    open_request.on_upgrade_needed(|event| {
+        let database = event.database().unwrap();
+
+        let mut store_params = ObjectStoreParams::new();
+        store_params.auto_increment(true);
+        store_params.key_path(Some(KeyPath::new_single("id")));
+
+        let store = database
+            .create_object_store("employees", store_params)
+            .unwrap();
+
+        let mut index_params = IndexParams::new();
+        index_params.unique(true);
+
+        store
+            .create_index("email", KeyPath::new_single("email"), Some(index_params))
+            .unwrap();
+    });
+
+    let database = open_request.await.unwrap();
+
+    // Add a value to store
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadWrite)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    assert_eq!(store.count(None).await, Ok(0));
+
+    let employee = serde_json::json!({
+        "id": 0,
+        "name": "John Doe",
+        "email": "john@example.com",
+    });
+
+    store
+        .add(
+            &employee.serialize(&Serializer::json_compatible()).unwrap(),
+            None,
+        )
+        .await
+        .unwrap();
+
+    transaction.commit().await.unwrap();
+
+    // Read the value back
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    assert_eq!(store.count(None).await, Ok(1));
+
+    let stored_employee = store.get(JsValue::from(0)).await;
+    assert!(
+        stored_employee.is_ok(),
+        "stored employee should be ok: {}",
+        stored_employee.unwrap_err()
+    );
+    let stored_employee = stored_employee.unwrap().unwrap();
+
+    let stored_employee: Value = serde_wasm_bindgen::from_value(stored_employee).unwrap();
+
+    assert_eq!(stored_employee["name"], "John Doe");
+    assert_eq!(stored_employee["email"], "john@example.com");
+
+    transaction.done().await.unwrap();
 
     database.close();
     factory.delete("test").await.unwrap();
