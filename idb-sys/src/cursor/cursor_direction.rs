@@ -4,10 +4,11 @@ use web_sys::IdbCursorDirection;
 use crate::Error;
 
 /// Specifies the cursor direction.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum CursorDirection {
     /// `Next` causes the cursor to be opened at the start of the source. When iterated, the cursor yields all records,
     /// including duplicates, in monotonically increasing order of keys.
+    #[default]
     Next,
     /// `NextUnique` causes the cursor to be opened at the start of the source. When iterated, the cursor does not yield
     /// records with the same key, but otherwise yields all records, in monotonically increasing order of keys.
@@ -18,12 +19,6 @@ pub enum CursorDirection {
     /// `PrevUnique` causes the cursor to be opened at the end of the source. When iterated, the cursor does not yield
     /// records with the same key, but otherwise yields all records, in monotonically decreasing order of keys.
     PrevUnique,
-}
-
-impl Default for CursorDirection {
-    fn default() -> Self {
-        CursorDirection::Next
-    }
 }
 
 impl TryFrom<IdbCursorDirection> for CursorDirection {
