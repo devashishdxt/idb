@@ -248,4 +248,7 @@ async fn test_cursor_with_zero_matches() {
     let store = transaction.object_store("employees").unwrap();
 
     assert!(store.open_cursor(None, None).await.unwrap().is_none());
+
+    database.close();
+    factory.delete("test").await.unwrap();
 }

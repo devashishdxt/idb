@@ -240,4 +240,7 @@ async fn test_transaction_read_write_in_loop() {
     }
 
     transaction.commit().await.unwrap();
+
+    database.close();
+    factory.delete("test").await.unwrap();
 }
