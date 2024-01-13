@@ -9,12 +9,9 @@ use crate::{utils::dom_string_list_to_vec, Database, Error, ObjectStore};
 
 /// Provides a static, asynchronous transaction on a database. All reading and writing of data is done within
 /// transactions.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Transaction {
     inner: IdbTransaction,
-    abort_callback: Option<Closure<dyn FnMut(Event)>>,
-    complete_callback: Option<Closure<dyn FnMut(Event)>>,
-    error_callback: Option<Closure<dyn FnMut(Event)>>,
 }
 
 impl Transaction {
@@ -71,7 +68,6 @@ impl Transaction {
         let closure = Closure::once(callback);
         self.inner
             .set_onabort(Some(closure.as_ref().unchecked_ref()));
-        self.abort_callback = Some(closure);
     }
 
     /// Adds an event handler for `complete` event.
@@ -82,7 +78,6 @@ impl Transaction {
         let closure = Closure::once(callback);
         self.inner
             .set_oncomplete(Some(closure.as_ref().unchecked_ref()));
-        self.complete_callback = Some(closure);
     }
 
     /// Adds an event handler for `error` event.
@@ -93,7 +88,6 @@ impl Transaction {
         let closure = Closure::once(callback);
         self.inner
             .set_onerror(Some(closure.as_ref().unchecked_ref()));
-        self.error_callback = Some(closure);
     }
 }
 
@@ -111,12 +105,7 @@ impl TryFrom<EventTarget> for Transaction {
 
 impl From<IdbTransaction> for Transaction {
     fn from(inner: IdbTransaction) -> Self {
-        Self {
-            inner,
-            abort_callback: None,
-            complete_callback: None,
-            error_callback: None,
-        }
+        Self { inner }
     }
 }
 
