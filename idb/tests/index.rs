@@ -53,6 +53,7 @@ async fn test_index_read() {
             &employee1.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
     let id2 = store
@@ -60,6 +61,7 @@ async fn test_index_read() {
             &employee2.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
 

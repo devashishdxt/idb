@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use num_traits::ToPrimitive;
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{Event, IdbVersionChangeEvent};
 
 use crate::Error;
@@ -51,10 +51,14 @@ impl From<VersionChangeEvent> for IdbVersionChangeEvent {
     }
 }
 
-impl From<JsValue> for VersionChangeEvent {
-    fn from(value: JsValue) -> Self {
-        let inner = value.into();
-        Self { inner }
+impl TryFrom<JsValue> for VersionChangeEvent {
+    type Error = Error;
+
+    fn try_from(value: JsValue) -> Result<Self, Self::Error> {
+        value
+            .dyn_into::<IdbVersionChangeEvent>()
+            .map(Into::into)
+            .map_err(|value| Error::UnexpectedJsType("IdbVersionChangeEvent", value))
     }
 }
 

@@ -27,6 +27,7 @@ async fn test_transaction_commit() {
             &serde_wasm_bindgen::to_value("hello").unwrap(),
             Some(&serde_wasm_bindgen::to_value("world").unwrap()),
         )
+        .unwrap()
         .await;
 
     assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());
@@ -89,6 +90,7 @@ async fn test_transaction_abort() {
             &serde_wasm_bindgen::to_value("hello").unwrap(),
             Some(&serde_wasm_bindgen::to_value("world").unwrap()),
         )
+        .unwrap()
         .await;
 
     assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());
@@ -142,6 +144,7 @@ async fn test_transaction_error() {
             &serde_wasm_bindgen::to_value("hello").unwrap(),
             Some(&serde_wasm_bindgen::to_value("world").unwrap()),
         )
+        .unwrap()
         .await
         .unwrap();
 
@@ -193,6 +196,7 @@ async fn test_transaction_read_write_in_loop() {
                 &serde_wasm_bindgen::to_value("hello").unwrap(),
                 Some(&serde_wasm_bindgen::to_value(&i.to_string()).unwrap()),
             )
+            .unwrap()
             .await;
 
         assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());
@@ -232,6 +236,7 @@ async fn test_transaction_read_write_in_loop() {
                 &serde_wasm_bindgen::to_value("hello").unwrap(),
                 Some(&serde_wasm_bindgen::to_value(&i.to_string()).unwrap()),
             )
+            .unwrap()
             .await;
 
         assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());

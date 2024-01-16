@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use idb_sys::Cursor as SysCursor;
 use js_sys::Object;
 use wasm_bindgen::JsValue;
@@ -122,27 +124,42 @@ impl Cursor {
     }
 
     /// Updated the record pointed at by the cursor with a new value.
-    pub async fn update(&self, value: &JsValue) -> Result<JsValue, Error> {
+    ///
+    /// > Note: Update is initiated as soon as this function is called (without using `.await`). After `.await`, a
+    ///   callback is registered to wait for the update to complete.
+    pub fn update(
+        &self,
+        value: &JsValue,
+    ) -> Result<impl Future<Output = Result<JsValue, Error>>, Error> {
         if self.finished {
             return Err(Error::CursorFinished);
         }
 
         let request = self.inner.update(value)?;
-        wait_request(request).await?.ok_or(Error::UnexpectedJsValue(
-            "value after update",
-            JsValue::NULL,
-        ))
+
+        Ok(async move {
+            wait_request(request).await?.ok_or(Error::UnexpectedJsValue(
+                "value after update",
+                JsValue::NULL,
+            ))
+        })
     }
 
     /// Delete the record pointed at by the cursor with a new value.
-    pub async fn delete(&self) -> Result<(), Error> {
+    ///
+    /// > Note: Delete is initiated as soon as this function is called (without using `.await`). After `.await`, a
+    ///   callback is registered to wait for the delete to complete.
+    pub fn delete(&self) -> Result<impl Future<Output = Result<(), Error>>, Error> {
         if self.finished {
             return Err(Error::CursorFinished);
         }
 
         let request = self.inner.delete()?;
-        let _: Option<JsValue> = wait_request(request).await?;
-        Ok(())
+
+        Ok(async move {
+            let _: Option<JsValue> = wait_request(request).await?;
+            Ok(())
+        })
     }
 }
 

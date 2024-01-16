@@ -102,6 +102,7 @@ async fn test_object_store_crud() {
             &employee.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await;
     assert!(id.is_ok(), "id should be ok: {}", id.unwrap_err());
     let id = id.unwrap();
@@ -154,6 +155,7 @@ async fn test_object_store_crud() {
             &employee.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await;
     assert!(put.is_ok(), "put should be ok: {}", put.unwrap_err());
 
@@ -194,7 +196,7 @@ async fn test_object_store_crud() {
 
     let store = transaction.object_store("employees").unwrap();
 
-    let delete = store.delete(id.clone()).await;
+    let delete = store.delete(id.clone()).unwrap().await;
     assert!(
         delete.is_ok(),
         "delete should be ok: {}",
@@ -235,6 +237,7 @@ async fn test_object_store_crud() {
             &employee1.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
     let id2 = store
@@ -242,6 +245,7 @@ async fn test_object_store_crud() {
             &employee2.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
 
@@ -291,7 +295,7 @@ async fn test_object_store_crud() {
 
     let store = transaction.object_store("employees").unwrap();
 
-    let clear = store.clear().await;
+    let clear = store.clear().unwrap().await;
     assert!(clear.is_ok(), "clear should be ok: {}", clear.unwrap_err());
 
     transaction.commit().await.unwrap();
@@ -351,6 +355,7 @@ async fn test_duplicate_add_fail() {
             &employee.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
 
@@ -365,6 +370,7 @@ async fn test_duplicate_add_fail() {
             &employee.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await;
 
     assert!(
@@ -424,6 +430,7 @@ async fn test_zero_key_get() {
             &employee.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
 
@@ -452,6 +459,133 @@ async fn test_zero_key_get() {
     assert_eq!(stored_employee["email"], "john@example.com");
 
     transaction.done().await.unwrap();
+
+    database.close();
+    factory.delete("test").await.unwrap();
+}
+
+#[wasm_bindgen_test]
+async fn test_bulk_insertion() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").await.unwrap();
+
+    let mut open_request = factory.open("test", Some(1)).unwrap();
+    open_request.on_upgrade_needed(|event| {
+        let database = event.database().unwrap();
+
+        let mut store_params = ObjectStoreParams::new();
+        store_params.key_path(Some(KeyPath::new_single("id")));
+
+        let store = database
+            .create_object_store("employees", store_params)
+            .unwrap();
+
+        let mut index_params = IndexParams::new();
+        index_params.unique(true);
+
+        store
+            .create_index("email", KeyPath::new_single("email"), Some(index_params))
+            .unwrap();
+    });
+
+    let database = open_request.await.unwrap();
+
+    // Add a value to store
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadWrite)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    let employee1 = serde_json::json!({
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+    });
+    let employee2 = serde_json::json!({
+        "id": 2,
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+    });
+
+    let _ = store.add(
+        &employee1.serialize(&Serializer::json_compatible()).unwrap(),
+        None,
+    );
+    let _ = store
+        .add(
+            &employee2.serialize(&Serializer::json_compatible()).unwrap(),
+            None,
+        )
+        .unwrap()
+        .await
+        .unwrap();
+
+    transaction.commit().await.unwrap();
+
+    // Read the values back
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    assert_eq!(store.count(None).await, Ok(2));
+
+    let stored_employees = store.get_all(None, None).await;
+    assert!(
+        stored_employees.is_ok(),
+        "stored employees should be ok: {}",
+        stored_employees.unwrap_err()
+    );
+    let stored_employees = stored_employees.unwrap();
+
+    assert_eq!(stored_employees.len(), 2);
+
+    let stored_employee1 = store
+        .get_all(Some(Query::Key(1.into())), None)
+        .await
+        .unwrap();
+
+    assert_eq!(stored_employee1.len(), 1);
+    assert_eq!(
+        serde_wasm_bindgen::from_value::<Value>(stored_employees[0].clone()).unwrap(),
+        serde_wasm_bindgen::from_value::<Value>(stored_employee1[0].clone()).unwrap()
+    );
+
+    let stored_employee2 = store
+        .get_all(Some(Query::Key(2.into())), None)
+        .await
+        .unwrap();
+
+    assert_eq!(stored_employee2.len(), 1);
+    assert_eq!(
+        serde_wasm_bindgen::from_value::<Value>(stored_employees[1].clone()).unwrap(),
+        serde_wasm_bindgen::from_value::<Value>(stored_employee2[0].clone()).unwrap()
+    );
+
+    transaction.done().await.unwrap();
+
+    // Clear the store
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadWrite)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    let clear = store.clear().unwrap().await;
+    assert!(clear.is_ok(), "clear should be ok: {}", clear.unwrap_err());
+
+    transaction.commit().await.unwrap();
+
+    // Read the values back
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    assert_eq!(store.count(None).await, Ok(0));
 
     database.close();
     factory.delete("test").await.unwrap();

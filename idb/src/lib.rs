@@ -7,7 +7,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! idb = "0.4"
+//! idb = "0.5"
 //! ```
 //!
 //! ## Example
@@ -80,6 +80,7 @@
 //!             &employee.serialize(&Serializer::json_compatible()).unwrap(),
 //!             None,
 //!         )
+//!         .unwrap()
 //!         .await?;
 //!
 //!     // Commit the transaction

@@ -8,12 +8,12 @@ To use `idb`, you need to add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-idb = "0.4"
+idb = "0.5"
 ```
 
 ### Example
 
-To create a new database, you can use `Factory::open`:
+To create a new database, you can use [`Factory::open`]:
 
 ```rust
 use idb::{Database, Error, Factory};
@@ -55,7 +55,7 @@ async fn create_database() -> Result<Database, Error> {
 }
 ```
 
-To add data to an object store, you can use `ObjectStore::add`:
+To add data to an object store, you can use [`ObjectStore::add`]:
 
 ```rust
 use idb::{Database, Error};
@@ -81,6 +81,7 @@ async fn add_data(database: &Database) -> Result<JsValue, Error> {
             &employee.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await?;
 
     // Commit the transaction
@@ -90,7 +91,7 @@ async fn add_data(database: &Database) -> Result<JsValue, Error> {
 }
 ```
 
-To get data from an object store, you can use `ObjectStore::get`:
+To get data from an object store, you can use [`ObjectStore::get`]:
 
 ```rust
 async fn get_data(database: &Database, id: JsValue) -> Result<Option<serde_json::Value>, Error> {

@@ -52,6 +52,7 @@ async fn test_cursor_next_advance_and_get() {
             &employee1.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
     let id2 = store
@@ -59,6 +60,7 @@ async fn test_cursor_next_advance_and_get() {
             &employee2.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
 
@@ -162,6 +164,7 @@ async fn test_cursor_delete() {
             &employee1.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
     let id2 = store
@@ -169,6 +172,7 @@ async fn test_cursor_delete() {
             &employee2.serialize(&Serializer::json_compatible()).unwrap(),
             None,
         )
+        .unwrap()
         .await
         .unwrap();
 
@@ -191,7 +195,7 @@ async fn test_cursor_delete() {
     cursor.next(None).await.unwrap();
     assert_eq!(Ok(id2.clone()), cursor.key());
 
-    cursor.delete().await.unwrap();
+    cursor.delete().unwrap().await.unwrap();
 
     cursor.next(None).await.unwrap();
     assert_eq!(Ok(JsValue::null()), cursor.key());

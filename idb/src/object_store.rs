@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use idb_sys::{KeyPath, ObjectStore as SysObjectStore};
 use wasm_bindgen::JsValue;
 
@@ -44,33 +46,68 @@ impl ObjectStore {
     }
 
     /// Adds or updates a record in store with the given value and key.
-    pub async fn put(&self, value: &JsValue, key: Option<&JsValue>) -> Result<JsValue, Error> {
+    ///
+    /// > Note: Put is initiated as soon as this function is called (without using `.await`). After `.await`, a
+    ///   callback is registered to wait for the put to complete.
+    pub fn put(
+        &self,
+        value: &JsValue,
+        key: Option<&JsValue>,
+    ) -> Result<impl Future<Output = Result<JsValue, Error>>, Error> {
         let request = self.inner.put(value, key)?;
-        wait_request(request)
-            .await?
-            .ok_or(Error::UnexpectedJsValue("key on put", JsValue::NULL))
+
+        Ok(async move {
+            wait_request(request)
+                .await?
+                .ok_or(Error::UnexpectedJsValue("key on put", JsValue::NULL))
+        })
     }
 
     /// Adds a record in store with the given value and key.
-    pub async fn add(&self, value: &JsValue, key: Option<&JsValue>) -> Result<JsValue, Error> {
+    ///
+    /// > Note: Add is initiated as soon as this function is called (without using `.await`). After `.await`, a
+    ///   callback is registered to wait for the add to complete.
+    pub fn add(
+        &self,
+        value: &JsValue,
+        key: Option<&JsValue>,
+    ) -> Result<impl Future<Output = Result<JsValue, Error>>, Error> {
         let request = self.inner.add(value, key)?;
-        wait_request(request)
-            .await?
-            .ok_or(Error::UnexpectedJsValue("key on add", JsValue::NULL))
+
+        Ok(async move {
+            wait_request(request)
+                .await?
+                .ok_or(Error::UnexpectedJsValue("key on add", JsValue::NULL))
+        })
     }
 
     /// Deletes records in store with the given key or in the given key range in query.
-    pub async fn delete(&self, query: impl Into<Query>) -> Result<(), Error> {
+    ///
+    /// > Note: Delete is initiated as soon as this function is called (without using `.await`). After `.await`, a
+    ///   callback is registered to wait for the delete to complete.
+    pub fn delete(
+        &self,
+        query: impl Into<Query>,
+    ) -> Result<impl Future<Output = Result<(), Error>>, Error> {
         let request = self.inner.delete(query.into())?;
-        let _: Option<JsValue> = wait_request(request).await?;
-        Ok(())
+
+        Ok(async move {
+            let _: Option<JsValue> = wait_request(request).await?;
+            Ok(())
+        })
     }
 
     /// Deletes all records in store.
-    pub async fn clear(&self) -> Result<(), Error> {
+    ///
+    /// > Note: Clear is initiated as soon as this function is called (without using `.await`). After `.await`, a
+    ///   callback is registered to wait for the clear to complete.
+    pub fn clear(&self) -> Result<impl Future<Output = Result<(), Error>>, Error> {
         let request = self.inner.clear()?;
-        let _: Option<JsValue> = wait_request(request).await?;
-        Ok(())
+
+        Ok(async move {
+            let _: Option<JsValue> = wait_request(request).await?;
+            Ok(())
+        })
     }
 
     /// Retrieves the value of the first record matching the given key or key range in query.
