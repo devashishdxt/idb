@@ -101,6 +101,28 @@ impl Transaction {
             .set_onerror(Some(closure.as_ref().unchecked_ref()));
         self.error_callback = Some(closure);
     }
+
+    /// Release memory management of the callbacks to JS GC.
+    ///
+    /// > Note: This may leak memory. Read more about it
+    ///   [here](https://docs.rs/wasm-bindgen/latest/wasm_bindgen/closure/struct.Closure.html#method.into_js_value).
+    pub fn forget_callbacks(&mut self) {
+        let abort_callback = self.abort_callback.take();
+        let complete_callback = self.complete_callback.take();
+        let error_callback = self.error_callback.take();
+
+        if let Some(callback) = abort_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = complete_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = error_callback {
+            callback.forget();
+        }
+    }
 }
 
 impl TryFrom<EventTarget> for Transaction {
