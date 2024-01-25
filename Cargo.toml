@@ -1,6 +1,6 @@
 [package]
 name = "idb"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Devashish Dixit <devashishdxt@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "A futures based crate for interacting with IndexedDB on browsers using webassembly"
@@ -16,6 +16,7 @@ edition = "2021"
 [features]
 default = ["futures"]
 doc = []
+builder = ["futures"]
 futures = ["tokio"]
 
 [dependencies]

@@ -133,6 +133,9 @@
 //!
 //! For more examples on using other functionality, see the
 //! [tests](https://github.com/devashishdxt/idb/tree/main/idb/tests) directory.
+#[cfg(feature = "builder")]
+#[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "builder")))]
+pub mod builder;
 mod cursor;
 mod database;
 mod error;
@@ -147,10 +150,8 @@ pub mod request;
 mod transaction;
 mod utils;
 
-#[cfg(feature = "futures")]
-pub use self::transaction::{TransactionFuture, TransactionResult};
 pub use self::{
-    cursor::{Cursor, CursorDirection, KeyCursor, ManagedCursor, ManagedKeyCursor},
+    cursor::{Cursor, CursorDirection, KeyCursor},
     database::Database,
     error::Error,
     event::{DatabaseEvent, Event, StoreEvent},
@@ -161,4 +162,10 @@ pub use self::{
     query::Query,
     request::Request,
     transaction::{Transaction, TransactionMode},
+};
+#[cfg(feature = "futures")]
+#[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
+pub use self::{
+    cursor::{ManagedCursor, ManagedKeyCursor},
+    transaction::{TransactionFuture, TransactionResult},
 };

@@ -2,9 +2,11 @@ use js_sys::Object;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbCursorWithValue;
 
+#[cfg(feature = "futures")]
+use crate::ManagedCursor;
 use crate::{
     request::{DeleteStoreRequest, OpenCursorStoreRequest, UpdateStoreRequest},
-    CursorDirection, Error, ManagedCursor,
+    CursorDirection, Error,
 };
 
 /// Represents a cursor for traversing or iterating over multiple records in a database.
@@ -100,6 +102,8 @@ impl Cursor {
     }
 
     /// Returns a managed cursor.
+    #[cfg(feature = "futures")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
     pub fn into_managed(self) -> ManagedCursor {
         self.into()
     }

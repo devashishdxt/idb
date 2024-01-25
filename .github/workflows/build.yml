@@ -19,7 +19,7 @@ jobs:
           toolchain: stable
           targets: wasm32-unknown-unknown
       - name: Run cargo build
-        run: cargo build --target wasm32-unknown-unknown
+        run: cargo build --all-features --target wasm32-unknown-unknown
   lint:
     name: Lint
     runs-on: ubuntu-latest

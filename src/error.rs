@@ -45,6 +45,14 @@ pub enum Error {
     #[error("failed to delete a value: {}", js_object_display(.0))]
     DeleteFailed(JsValue),
 
+    /// DOM exception
+    #[error("DOM exception: {}", js_object_display(.0))]
+    DomException(web_sys::DomException),
+
+    /// DOM exception not found
+    #[error("DOM exception not found")]
+    DomExceptionNotFound,
+
     /// Failed to get event target
     #[error("failed to get event target")]
     EventTargetNotFound,
@@ -187,18 +195,15 @@ pub enum Error {
 
     /// Failed to receive object on oneshot channel
     #[cfg(feature = "futures")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
     #[error("failed to receive object on oneshot channel")]
     OneshotChannelReceiveError,
 
-    /// DOM exception not found
-    #[cfg(feature = "futures")]
-    #[error("DOM exception not found")]
-    DomExceptionNotFound,
-
-    #[cfg(feature = "futures")]
-    /// DOM exception
-    #[error("DOM exception: {}", js_object_display(.0))]
-    DomException(web_sys::DomException),
+    /// No transaction associated with database request
+    #[cfg(feature = "builder")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "builder")))]
+    #[error("no transaction associated with database request")]
+    TransactionNotFound,
 }
 
 fn js_object_display(option: &JsValue) -> String {

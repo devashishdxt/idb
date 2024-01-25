@@ -6,6 +6,8 @@ pub use self::{key_path::KeyPath, object_store_params::ObjectStoreParams};
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbObjectStore;
 
+#[cfg(feature = "builder")]
+use crate::builder::ObjectStoreBuilder;
 use crate::{
     request::{
         AddStoreRequest, ClearStoreRequest, CountStoreRequest, DeleteStoreRequest,
@@ -23,6 +25,13 @@ pub struct ObjectStore {
 }
 
 impl ObjectStore {
+    /// Creates a new instance of [`ObjectStoreBuilder`].
+    #[cfg(feature = "builder")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "builder")))]
+    pub fn builder(name: &str) -> ObjectStoreBuilder {
+        ObjectStoreBuilder::new(name)
+    }
+
     /// Returns the name of the store.
     pub fn name(&self) -> String {
         self.inner.name()
