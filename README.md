@@ -4,19 +4,27 @@ A futures based crate for interacting with IndexedDB on browsers using webassemb
 
 ## Usage
 
-To use `idb`, you need to add the following to your `Cargo.toml`:
+To use `idb`, you need to run following command from your project root:
 
-```toml
-[dependencies]
-idb = "0.5"
+```sh
+cargo add idb
 ```
+
+If you don't want to use `async`/`await` syntax, you can disable the `futures` feature using:
+
+```sh
+cargo add idb --no-default-features
+```
+
+After disabling the `futures` feature, you can use `on_success` and `on_error` methods on requests to attach
+callbacks.
 
 ### Example
 
 To create a new database, you can use [`Factory::open`]:
 
 ```rust
-use idb::{Database, Error, Factory};
+use idb::{Database, DatabaseEvent, Error, Factory, IndexParams, KeyPath, ObjectStoreParams};
 
 async fn create_database() -> Result<Database, Error> {
     // Get a factory instance from global scope
@@ -58,9 +66,10 @@ async fn create_database() -> Result<Database, Error> {
 To add data to an object store, you can use [`ObjectStore::add`]:
 
 ```rust
-use idb::{Database, Error};
+use idb::{Database, Error, TransactionMode};
 use serde::Serialize;
 use serde_wasm_bindgen::Serializer;
+use wasm_bindgen::JsValue;
 
 async fn add_data(database: &Database) -> Result<JsValue, Error> {
     // Create a read-write transaction
@@ -85,7 +94,7 @@ async fn add_data(database: &Database) -> Result<JsValue, Error> {
         .await?;
 
     // Commit the transaction
-    transaction.commit().await?;
+    transaction.commit()?.await?;
 
     Ok(id)
 }
@@ -94,7 +103,11 @@ async fn add_data(database: &Database) -> Result<JsValue, Error> {
 To get data from an object store, you can use [`ObjectStore::get`]:
 
 ```rust
-async fn get_data(database: &Database, id: JsValue) -> Result<Option<serde_json::Value>, Error> {
+use idb::{Database, Error, TransactionMode};
+use serde_json::Value;
+use wasm_bindgen::JsValue;
+
+async fn get_data(database: &Database, id: JsValue) -> Result<Option<Value>, Error> {
     // Create a read-only transaction
     let transaction = database
         .transaction(&["employees"], TransactionMode::ReadOnly)
@@ -104,14 +117,14 @@ async fn get_data(database: &Database, id: JsValue) -> Result<Option<serde_json:
     let store = transaction.object_store("employees").unwrap();
 
     // Get the stored data
-    let stored_employee: Option<JsValue> = store.get(id).await?;
+    let stored_employee: Option<JsValue> = store.get(id)?.await?;
 
     // Deserialize the stored data
-    let stored_employee: Option<serde_json::Value> = stored_employee
+    let stored_employee: Option<Value> = stored_employee
         .map(|stored_employee| serde_wasm_bindgen::from_value(stored_employee).unwrap());
 
-    // Wait for the transaction to complete
-    transaction.done().await?;
+    // Wait for the transaction to complete (alternatively, you can also commit the transaction)
+    transaction.await?;
 
     Ok(stored_employee)
 }

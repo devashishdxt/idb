@@ -12,13 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install stable rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: stable
-          target: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
       - name: Install just
@@ -30,13 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install stable rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: stable
-          target: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
       - name: Install just
