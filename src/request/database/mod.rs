@@ -66,6 +66,33 @@ impl DatabaseRequest {
             .set_onupgradeneeded(Some(closure.as_ref().unchecked_ref()));
         self.upgrade_needed_callback = Some(closure);
     }
+
+    /// Release memory management of the callbacks to JS GC.
+    ///
+    /// > Note: This may leak memory. Read more about it
+    ///   [here](https://docs.rs/wasm-bindgen/latest/wasm_bindgen/closure/struct.Closure.html#method.into_js_value).
+    pub fn forget_callbacks(&mut self) {
+        let success_callback = self.success_callback.take();
+        let error_callback = self.error_callback.take();
+        let blocked_callback = self.blocked_callback.take();
+        let upgrade_needed_callback = self.upgrade_needed_callback.take();
+
+        if let Some(callback) = success_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = error_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = blocked_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = upgrade_needed_callback {
+            callback.forget();
+        }
+    }
 }
 
 impl Request for DatabaseRequest {
