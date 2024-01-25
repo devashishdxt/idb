@@ -3,6 +3,8 @@ use num_traits::ToPrimitive;
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
 use web_sys::{Event, EventTarget, IdbDatabase};
 
+#[cfg(feature = "builder")]
+use crate::builder::DatabaseBuilder;
 use crate::{
     utils::dom_string_list_to_vec, Error, ObjectStore, ObjectStoreParams, Transaction,
     TransactionMode,
@@ -21,6 +23,13 @@ pub struct Database {
 }
 
 impl Database {
+    /// Creates a new instance of [`DatabaseBuilder`].
+    #[cfg(feature = "builder")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "builder")))]
+    pub fn builder(name: &str) -> DatabaseBuilder {
+        DatabaseBuilder::new(name)
+    }
+
     /// Returns the name of the database.
     pub fn name(&self) -> String {
         self.inner.name()

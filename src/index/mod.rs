@@ -5,6 +5,8 @@ pub use self::index_params::IndexParams;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::IdbIndex;
 
+#[cfg(feature = "builder")]
+use crate::builder::IndexBuilder;
 use crate::{
     request::{
         CountStoreRequest, GetAllKeysStoreRequest, GetAllStoreRequest, GetKeyStoreRequest,
@@ -20,6 +22,13 @@ pub struct Index {
 }
 
 impl Index {
+    /// Creates a new instance of [`IndexBuilder`].
+    #[cfg(feature = "builder")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "builder")))]
+    pub fn builder(name: String, key_path: KeyPath) -> IndexBuilder {
+        IndexBuilder::new(name, key_path)
+    }
+
     /// Returns the name of the index.
     pub fn name(&self) -> String {
         self.inner.name()

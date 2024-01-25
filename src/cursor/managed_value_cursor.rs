@@ -4,6 +4,8 @@ use wasm_bindgen::JsValue;
 use crate::{Cursor, CursorDirection, Error};
 
 /// A cursor that is managed by the library (for ease of use).
+#[cfg(feature = "futures")]
+#[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ManagedCursor {
     inner: Option<Cursor>,

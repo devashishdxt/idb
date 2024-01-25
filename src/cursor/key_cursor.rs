@@ -7,7 +7,8 @@ use crate::{
     CursorDirection, Error,
 };
 
-use super::ManagedKeyCursor;
+#[cfg(feature = "futures")]
+use crate::ManagedKeyCursor;
 
 /// Represents a key cursor for traversing or iterating over multiple records (only keys) in a database.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -97,6 +98,8 @@ impl KeyCursor {
     }
 
     /// Returns a managed version of this cursor.
+    #[cfg(feature = "futures")]
+    #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
     pub fn into_managed(self) -> ManagedKeyCursor {
         self.into()
     }
