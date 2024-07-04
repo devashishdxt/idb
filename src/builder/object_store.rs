@@ -86,9 +86,7 @@ impl ObjectStoreBuilder {
         let mut indexes_to_remove = Vec::new();
 
         for db_index_name in db_index_names {
-            if index_names.contains(db_index_name.as_str()) {
-                index_names.remove(db_index_name.as_str());
-            } else {
+            if !index_names.remove(db_index_name.as_str()) {
                 indexes_to_remove.push(db_index_name);
             }
         }
