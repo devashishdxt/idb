@@ -60,9 +60,7 @@ impl DatabaseBuilder {
             let mut stores_to_remove = Vec::new();
 
             for db_store_name in db_store_names {
-                if !store_names.contains(&db_store_name) {
-                    store_names.remove(&db_store_name);
-                } else {
+                if !store_names.remove(&db_store_name) {
                     stores_to_remove.push(db_store_name);
                 }
             }

@@ -1,0 +1,106 @@
+use idb::{
+    builder::{DatabaseBuilder, IndexBuilder, ObjectStoreBuilder},
+    Factory, KeyPath, TransactionMode,
+};
+use wasm_bindgen_test::wasm_bindgen_test;
+
+#[wasm_bindgen_test]
+async fn test_database_builder_name_and_version() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").unwrap().await.unwrap();
+
+    let database = DatabaseBuilder::new("test")
+        .version(1)
+        .build()
+        .await
+        .unwrap();
+
+    assert_eq!(database.name(), "test");
+    assert_eq!(database.version(), Ok(1));
+
+    database.close();
+
+    factory.delete("test").unwrap().await.unwrap();
+}
+
+#[wasm_bindgen_test]
+async fn test_database_builder_store_names() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").unwrap().await.unwrap();
+
+    let database = DatabaseBuilder::new("test")
+        .version(1)
+        .add_object_store(ObjectStoreBuilder::new("store1"))
+        .add_object_store(ObjectStoreBuilder::new("store2"))
+        .add_object_store(ObjectStoreBuilder::new("store3"))
+        .build()
+        .await
+        .unwrap();
+
+    let store_names = database.store_names();
+    assert_eq!(store_names.len(), 3);
+    assert!(store_names.contains(&"store1".to_string()));
+    assert!(store_names.contains(&"store2".to_string()));
+    assert!(store_names.contains(&"store3".to_string()));
+
+    database.close();
+    factory.delete("test").unwrap().await.unwrap();
+}
+
+#[wasm_bindgen_test]
+async fn test_database_builder_store_names_with_index() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").unwrap().await.unwrap();
+
+    let database = DatabaseBuilder::new("test")
+        .version(1)
+        .add_object_store(
+            ObjectStoreBuilder::new("store1").add_index(IndexBuilder::new(
+                "index1".to_string(),
+                KeyPath::new_single("id"),
+            )),
+        )
+        .add_object_store(
+            ObjectStoreBuilder::new("store2").add_index(IndexBuilder::new(
+                "index2".to_string(),
+                KeyPath::new_single("id"),
+            )),
+        )
+        .add_object_store(
+            ObjectStoreBuilder::new("store3").add_index(IndexBuilder::new(
+                "index3".to_string(),
+                KeyPath::new_single("id"),
+            )),
+        )
+        .build()
+        .await
+        .unwrap();
+
+    let store_names = database.store_names();
+    assert_eq!(store_names.len(), 3);
+    assert!(store_names.contains(&"store1".to_string()));
+    assert!(store_names.contains(&"store2".to_string()));
+    assert!(store_names.contains(&"store3".to_string()));
+
+    let transaction = database
+        .transaction(&["store1", "store2", "store3"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store1 = transaction.object_store("store1").unwrap();
+    let index1 = store1.index_names();
+    assert_eq!(1, index1.len());
+    assert!(index1.contains(&"index1".to_string()));
+
+    let store2 = transaction.object_store("store2").unwrap();
+    let index2 = store2.index_names();
+    assert_eq!(1, index2.len());
+    assert!(index2.contains(&"index2".to_string()));
+
+    let store3 = transaction.object_store("store3").unwrap();
+    let index3 = store3.index_names();
+    assert_eq!(1, index3.len());
+    assert!(index3.contains(&"index3".to_string()));
+
+    database.close();
+    factory.delete("test").unwrap().await.unwrap();
+}
