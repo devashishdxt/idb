@@ -142,3 +142,21 @@ async fn test_database_delete_object_store() {
     database.close();
     factory.delete("test").unwrap().await.unwrap();
 }
+
+#[wasm_bindgen_test]
+async fn test_database_drop_and_reopen() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").unwrap().await.unwrap();
+
+    let mut open_request = factory.open("test", Some(1)).unwrap();
+    open_request.on_upgrade_needed(|_| ());
+    let mut database = open_request.await.unwrap();
+    database.on_version_change(|event| event.database().expect("database").close());
+
+    drop(database);
+
+    let mut open_request = factory.open("test", Some(2)).unwrap();
+    open_request.on_upgrade_needed(|_| ());
+    let database = open_request.await.unwrap();
+    database.close();
+}
