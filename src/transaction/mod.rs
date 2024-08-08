@@ -105,7 +105,7 @@ impl Transaction {
     /// Release memory management of the callbacks to JS GC.
     ///
     /// > Note: This may leak memory. Read more about it
-    ///   [here](https://docs.rs/wasm-bindgen/latest/wasm_bindgen/closure/struct.Closure.html#method.into_js_value).
+    /// > [here](https://docs.rs/wasm-bindgen/latest/wasm_bindgen/closure/struct.Closure.html#method.into_js_value).
     pub fn forget_callbacks(&mut self) {
         let abort_callback = self.abort_callback.take();
         let complete_callback = self.complete_callback.take();
