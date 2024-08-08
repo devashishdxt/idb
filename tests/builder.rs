@@ -104,3 +104,66 @@ async fn test_database_builder_store_names_with_index() {
     database.close();
     factory.delete("test").unwrap().await.unwrap();
 }
+
+#[wasm_bindgen_test]
+async fn test_database_builder_reopen() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").unwrap().await.unwrap();
+
+    let database = DatabaseBuilder::new("test")
+        .version(1)
+        .add_object_store(
+            ObjectStoreBuilder::new("store")
+                .add_index(IndexBuilder::new(
+                    "index0".to_string(),
+                    KeyPath::new_single("id"),
+                ))
+                .add_index(
+                    IndexBuilder::new("index1".to_string(), KeyPath::new_single("id")).unique(true),
+                ),
+        )
+        .build()
+        .await
+        .unwrap();
+
+    let transaction = database
+        .transaction(&["store"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("store").unwrap();
+    let index = store.index_names();
+    assert_eq!(index, vec!["index0", "index1"]);
+    assert!(store.index("index1").unwrap().unique());
+
+    transaction.abort().unwrap();
+    database.close();
+
+    let database = DatabaseBuilder::new("test")
+        .version(2)
+        .add_object_store(
+            ObjectStoreBuilder::new("store")
+                .add_index(IndexBuilder::new(
+                    "index0".to_string(),
+                    KeyPath::new_single("id"),
+                ))
+                .add_index(IndexBuilder::new(
+                    "index1".to_string(),
+                    KeyPath::new_single("id"),
+                )),
+        )
+        .build()
+        .await
+        .unwrap();
+
+    let transaction = database
+        .transaction(&["store"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("store").unwrap();
+    let index = store.index_names();
+    assert_eq!(index, vec!["index0", "index1"]);
+    assert!(!store.index("index1").unwrap().unique());
+
+    transaction.abort().unwrap();
+    database.close();
+}

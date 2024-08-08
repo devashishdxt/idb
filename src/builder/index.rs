@@ -39,6 +39,17 @@ impl IndexBuilder {
 
     /// Applies the index to the given object store.
     pub(crate) fn apply(self, object_store: &ObjectStore) -> Result<(), Error> {
+        if let Ok(existing_index) = object_store.index(&self.name) {
+            let indexes_equal = existing_index.key_path()?.as_ref() == Some(&self.key_path)
+                && Some(existing_index.unique()) == self.unique
+                && Some(existing_index.multi_entry()) == self.multi_entry;
+            if indexes_equal {
+                // skip re-creating the same index
+                return Ok(());
+            } else {
+                object_store.delete_index(&self.name)?;
+            }
+        }
         let mut params = IndexParams::new();
 
         if let Some(unique) = self.unique {
