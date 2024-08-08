@@ -267,7 +267,7 @@ impl ObjectStore {
     }
 
     /// Creates a new index in store with the given name, key path and options and returns a new [`Index`]. Returns an
-    /// [`Error`] if not called within an upgrade transaction.
+    /// [`Error`] if not called within an upgrade transaction or an index with the `name` already exists.
     pub fn create_index(
         &self,
         name: &str,
