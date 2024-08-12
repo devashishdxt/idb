@@ -137,6 +137,33 @@ impl Database {
             .set_onversionchange(Some(closure.as_ref().unchecked_ref()));
         self.version_change_callback = Some(closure);
     }
+
+    /// Release memory management of the callbacks to JS GC.
+    ///
+    /// > Note: This may leak memory. Read more about it
+    /// > [here](https://docs.rs/wasm-bindgen/latest/wasm_bindgen/closure/struct.Closure.html#method.into_js_value).
+    pub fn forget_callbacks(&mut self) {
+        let abort_callback = self.abort_callback.take();
+        let close_callback = self.close_callback.take();
+        let error_callback = self.error_callback.take();
+        let version_change_callback = self.version_change_callback.take();
+
+        if let Some(callback) = abort_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = close_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = error_callback {
+            callback.forget();
+        }
+
+        if let Some(callback) = version_change_callback {
+            callback.forget();
+        }
+    }
 }
 
 impl TryFrom<EventTarget> for Database {
