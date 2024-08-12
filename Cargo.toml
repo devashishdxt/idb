@@ -20,12 +20,12 @@ builder = ["futures"]
 futures = ["tokio"]
 
 [dependencies]
-js-sys = "0.3.69"
-num-traits = "0.2.19"
-thiserror = "1.0.61"
-tokio = { version = "1.38.0", features = ["sync"], optional = true }
-wasm-bindgen = "0.2.92"
-web-sys = { version = "0.3.69", features = [
+js-sys = "0.3"
+num-traits = "0.2"
+thiserror = "1"
+tokio = { version = "1", features = ["sync"], optional = true }
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = [
     "DomException",
     "DomStringList",
     "Event",
@@ -49,14 +49,14 @@ web-sys = { version = "0.3.69", features = [
 ] }
 
 [dev-dependencies]
-gloo = { version = "0.11.0", default-features = false, features = [
+gloo = { version = "0.11", default-features = false, features = [
     "timers",
     "futures",
 ] }
-serde = "1.0.203"
-serde-wasm-bindgen = "0.6.5"
-serde_json = "1.0.120"
-wasm-bindgen-test = "0.3.42"
+serde = "1"
+serde-wasm-bindgen = "0.6"
+serde_json = "1"
+wasm-bindgen-test = "0.3"
 
 [package.metadata.docs.rs]
 all-features = true
