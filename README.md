@@ -131,7 +131,7 @@ async fn get_data(database: &Database, id: JsValue) -> Result<Option<Value>, Err
 ```
 
 For more examples on using other functionality, see the
-[tests](https://github.com/devashishdxt/idb/tree/main/idb/tests) directory.
+[tests](https://github.com/devashishdxt/idb/tree/main/tests) directory.
 
 ## License
 
