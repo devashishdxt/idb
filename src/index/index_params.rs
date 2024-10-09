@@ -17,13 +17,13 @@ impl IndexParams {
 
     /// Sets the `unique` flag.
     pub fn unique(&mut self, unique: bool) -> &mut Self {
-        self.inner.unique(unique);
+        self.inner.set_unique(unique);
         self
     }
 
     /// Sets the `multi_entry` flag.
     pub fn multi_entry(&mut self, multi_entry: bool) -> &mut Self {
-        self.inner.multi_entry(multi_entry);
+        self.inner.set_multi_entry(multi_entry);
         self
     }
 }

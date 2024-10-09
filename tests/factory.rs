@@ -1,3 +1,5 @@
+use std::future::IntoFuture;
+
 use idb::Factory;
 use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -38,4 +40,34 @@ async fn test_factory_open_delete() {
         "Factory::delete() should be Ok(): {}",
         delete.unwrap_err()
     );
+}
+
+#[wasm_bindgen_test]
+async fn test_factory_open_request_drop() {
+    let factory = Factory::new().unwrap();
+
+    let open_request = factory.open("test", None);
+    assert!(
+        open_request.is_ok(),
+        "Factory::open() should be Ok(): {}",
+        open_request.unwrap_err()
+    );
+
+    let open_request = open_request.unwrap();
+    drop(open_request);
+}
+
+#[wasm_bindgen_test]
+async fn test_factory_open_request_future_drop() {
+    let factory = Factory::new().unwrap();
+
+    let open_request = factory.open("test", None);
+    assert!(
+        open_request.is_ok(),
+        "Factory::open() should be Ok(): {}",
+        open_request.unwrap_err()
+    );
+
+    let fut = open_request.unwrap().into_future();
+    drop(fut);
 }

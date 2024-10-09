@@ -46,6 +46,8 @@ impl Cursor {
 
     /// Returns the [`OpenCursorStoreRequest`] that was used to obtain this cursor.
     pub fn request(&self) -> OpenCursorStoreRequest {
+        // This API was removed from idb 2.0 spec but will be added back in idb 3.0 spec
+        #[allow(deprecated)]
         self.inner.request().into()
     }
 

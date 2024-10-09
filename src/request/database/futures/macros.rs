@@ -3,7 +3,7 @@ macro_rules! impl_database_request_future {
         #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
         #[doc = $doc]
         pub struct $type {
-            _inner: $base_request,
+            inner: $base_request,
             success_receiver: tokio::sync::oneshot::Receiver<Result<$return_type, crate::Error>>,
             error_receiver: tokio::sync::oneshot::Receiver<crate::Error>,
         }
@@ -43,6 +43,12 @@ macro_rules! impl_database_request_future {
             }
         }
 
+        impl Drop for $type {
+            fn drop(&mut self) {
+                self.inner.forget_callbacks();
+            }
+        }
+
         #[cfg_attr(any(docsrs, feature = "doc"), doc(cfg(feature = "futures")))]
         impl std::future::IntoFuture for $base_request {
             type Output = <Self::IntoFuture as std::future::Future>::Output;
@@ -64,7 +70,7 @@ macro_rules! impl_database_request_future {
                 });
 
                 $type {
-                    _inner: self,
+                    inner: self,
                     success_receiver,
                     error_receiver,
                 }
