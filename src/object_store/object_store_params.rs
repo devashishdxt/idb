@@ -17,13 +17,15 @@ impl ObjectStoreParams {
 
     /// Sets the `auto_increment` flag.
     pub fn auto_increment(&mut self, auto_increment: bool) -> &mut Self {
-        self.inner.auto_increment(auto_increment);
+        self.inner.set_auto_increment(auto_increment);
         self
     }
 
     /// Sets the key path.
     pub fn key_path(&mut self, key_path: Option<KeyPath>) -> &mut Self {
-        self.inner.key_path(key_path.map(Into::into).as_ref());
+        if let Some(key_path) = key_path {
+            self.inner.set_key_path(&key_path.into());
+        }
         self
     }
 }

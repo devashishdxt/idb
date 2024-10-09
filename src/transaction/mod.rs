@@ -59,6 +59,8 @@ impl Transaction {
     /// be accepted. This can be used to force a transaction to quickly finish, without waiting for pending requests to
     /// fire success events before attempting to commit normally.
     pub fn commit(self) -> Result<Self, Error> {
+        // This API was removed from idb 2.0 spec but will be added back in idb 3.0 spec
+        #[allow(deprecated)]
         self.inner.commit().map_err(Error::TransactionCommitError)?;
         Ok(self)
     }
