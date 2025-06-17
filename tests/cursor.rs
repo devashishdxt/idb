@@ -91,6 +91,35 @@ async fn test_cursor_next_advance_and_get() {
 
     transaction.await.unwrap();
 
+    // Test cursor flow (with next, in a loop)
+    let transaction = database
+        .transaction(&["employees"], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store("employees").unwrap();
+
+    let mut cursor = store
+        .open_cursor(None, Some(CursorDirection::Next))
+        .unwrap()
+        .await
+        .unwrap()
+        .unwrap()
+        .into_managed();
+
+    let mut num_employees = 0;
+    loop {
+        match cursor.value().unwrap() {
+            Some(_) => {
+                num_employees += 1;
+                cursor.next(None).await.unwrap();
+            }
+            None => break,
+        }
+    }
+    assert_eq!(2, num_employees);
+
+    transaction.await.unwrap();
+
     // Test cursor flow (with advance)
     let transaction = database
         .transaction(&["employees"], TransactionMode::ReadOnly)
