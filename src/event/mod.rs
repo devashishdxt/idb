@@ -29,8 +29,6 @@ impl Event for web_sys::Event {
     type Target = web_sys::EventTarget;
 
     fn target(&self) -> Result<Self::Target, Error> {
-        self.target()
-            .ok_or(Error::EventTargetNotFound)
-            .map_err(Into::into)
+        self.target().ok_or(Error::EventTargetNotFound)
     }
 }
