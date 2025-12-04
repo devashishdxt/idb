@@ -37,6 +37,14 @@ impl DatabaseBuilder {
         self
     }
 
+    /// Removes an object store.
+    pub fn remove_object_store(mut self, object_store_name: &str) -> Self {
+        self.object_stores.shift_remove(object_store_name);
+        self.object_stores_to_remove
+            .insert(object_store_name.to_owned());
+        self
+    }
+
     /// Builds the database.
     pub async fn build(self) -> Result<Database, Error> {
         let factory = Factory::new()?;
