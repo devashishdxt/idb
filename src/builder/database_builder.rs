@@ -41,6 +41,16 @@ impl DatabaseBuilder {
         self
     }
 
+    /// Removes an object store.
+    pub fn remove_object_store(mut self, object_store_name: &str) -> Self {
+        let _removed_object_store = self.object_stores.shift_remove(object_store_name);
+        debug_assert!(
+            _removed_object_store.is_some(),
+            "we should not be removing object stores which do not exist"
+        );
+        self
+    }
+
     /// Builds the database.
     pub async fn build(self) -> Result<Database, Error> {
         let factory = Factory::new()?;
