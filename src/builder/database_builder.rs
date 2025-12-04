@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use indexmap::IndexMap;
+
 use crate::{Database, DatabaseEvent, Error, Event, Factory};
 
 use super::ObjectStoreBuilder;
@@ -9,7 +11,7 @@ use super::ObjectStoreBuilder;
 pub struct DatabaseBuilder {
     name: String,
     version: Option<u32>,
-    object_stores: Vec<ObjectStoreBuilder>,
+    object_stores: IndexMap<String, ObjectStoreBuilder>,
 }
 
 impl DatabaseBuilder {
@@ -18,7 +20,7 @@ impl DatabaseBuilder {
         Self {
             name: name.to_owned(),
             version: None,
-            object_stores: Vec::new(),
+            object_stores: Default::default(),
         }
     }
 
@@ -30,7 +32,12 @@ impl DatabaseBuilder {
 
     /// Adds an object store.
     pub fn add_object_store(mut self, object_store: ObjectStoreBuilder) -> Self {
-        self.object_stores.push(object_store);
+        let name = object_store.name().to_owned();
+        let _previous_object_store_for_name = self.object_stores.insert(name, object_store);
+        debug_assert!(
+            _previous_object_store_for_name.is_none(),
+            "we probably don't want to be overwriting object stores at any point"
+        );
         self
     }
 
@@ -42,15 +49,11 @@ impl DatabaseBuilder {
         request.on_upgrade_needed(move |event| {
             let request = event.target().expect("open database request");
 
-            let mut store_names: HashSet<_> = self
-                .object_stores
-                .iter()
-                .map(|store| store.name().to_owned())
-                .collect();
+            let mut store_names = self.object_stores.keys().cloned().collect::<HashSet<_>>();
 
             let database = event.database().expect("database");
 
-            for object_store in self.object_stores {
+            for object_store in self.object_stores.into_values() {
                 object_store
                     .apply(&database, &request)
                     .expect("object store creation");
