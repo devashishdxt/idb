@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use indexmap::IndexMap;
 
-use crate::{Database, DatabaseEvent, Error, Event, Factory};
+use crate::{Database, DatabaseEvent as _, Error, Event as _, Factory, Request as _};
 
 use super::ObjectStoreBuilder;
 
@@ -12,6 +12,8 @@ pub struct DatabaseBuilder {
     name: String,
     version: Option<u32>,
     object_stores: IndexMap<String, ObjectStoreBuilder>,
+    /// Maps the new name to the old name and the builder.
+    object_stores_to_rename: IndexMap<String, (String, ObjectStoreBuilder)>,
 }
 
 impl DatabaseBuilder {
@@ -21,6 +23,7 @@ impl DatabaseBuilder {
             name: name.to_owned(),
             version: None,
             object_stores: Default::default(),
+            object_stores_to_rename: Default::default(),
         }
     }
 
@@ -51,17 +54,65 @@ impl DatabaseBuilder {
         self
     }
 
+    /// Renames the object store with the given name to the new given name.
+    pub fn rename_object_store(mut self, old_name: &str, new_name: &str) -> Self {
+        let mut old_name = old_name.to_owned();
+
+        let mut previous_object_store = self
+            .object_stores
+            .shift_remove(&old_name)
+            .or_else(|| {
+                // In case we're in a chain of renames, a store previously added for rename was added with the now old
+                // name
+                self.object_stores_to_rename.shift_remove(&old_name).map(
+                    |(previous_old_name, store)| {
+                        old_name = previous_old_name;
+                        store
+                    },
+                )
+            })
+            .expect("we should not be renaming object stores which do not exist");
+
+        previous_object_store.set_name(new_name);
+
+        self.object_stores_to_rename
+            .insert(new_name.to_owned(), (old_name, previous_object_store));
+
+        self
+    }
+
     /// Builds the database.
-    pub async fn build(self) -> Result<Database, Error> {
+    pub async fn build(mut self) -> Result<Database, Error> {
         let factory = Factory::new()?;
         let mut request = factory.open(&self.name, self.version)?;
 
         request.on_upgrade_needed(move |event| {
             let request = event.target().expect("open database request");
-
-            let mut store_names = self.object_stores.keys().cloned().collect::<HashSet<_>>();
-
             let database = event.database().expect("database");
+
+            let mut existing_store_names = database.store_names();
+            let mut stores_to_retain = self
+                .object_stores
+                .keys()
+                .cloned()
+                .chain(self.object_stores_to_rename.keys().cloned())
+                .collect::<HashSet<_>>();
+
+            // For each store to rename, rename if it exists locally, just add it otherwise
+            for (new_name, (old_name, store)) in self.object_stores_to_rename.into_iter() {
+                if !existing_store_names.contains(&old_name) {
+                    self.object_stores.insert(new_name, store);
+                } else {
+                    request
+                        .transaction()
+                        .expect("transaction")
+                        .object_store(&old_name)
+                        .expect("object store")
+                        .to_owned()
+                        .set_name(&new_name);
+                    existing_store_names = database.store_names()
+                }
+            }
 
             for object_store in self.object_stores.into_values() {
                 object_store
@@ -69,11 +120,10 @@ impl DatabaseBuilder {
                     .expect("object store creation");
             }
 
-            let db_store_names = database.store_names();
             let mut stores_to_remove = Vec::new();
 
-            for db_store_name in db_store_names {
-                if !store_names.remove(&db_store_name) {
+            for db_store_name in existing_store_names {
+                if !stores_to_retain.remove(&db_store_name) {
                     stores_to_remove.push(db_store_name);
                 }
             }
