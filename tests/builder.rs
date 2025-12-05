@@ -171,6 +171,44 @@ async fn test_database_builder_reopen_rename() {
 }
 
 #[wasm_bindgen_test]
+async fn test_database_builder_reopen_remove_rename() {
+    let factory = Factory::new().unwrap();
+    factory.delete("test").unwrap().await.unwrap();
+
+    let database = DatabaseBuilder::new("test")
+        .version(1)
+        .add_object_store(ObjectStoreBuilder::new("store"))
+        .add_object_store(ObjectStoreBuilder::new("store_to_rename"))
+        .build()
+        .await
+        .unwrap();
+
+    let store_names = database.store_names();
+    assert_eq!(store_names.len(), 2);
+    assert!(store_names.contains(&"store".to_string()));
+    assert!(store_names.contains(&"store_to_rename".to_string()));
+
+    database.close();
+
+    let database = DatabaseBuilder::new("test")
+        .version(2)
+        .add_object_store(ObjectStoreBuilder::new("store"))
+        .add_object_store(ObjectStoreBuilder::new("store_to_rename"))
+        .remove_object_store("store")
+        .rename_object_store("store_to_rename", "store")
+        .build()
+        .await
+        .unwrap();
+
+    let store_names = database.store_names();
+    assert_eq!(store_names.len(), 1);
+    assert!(store_names.contains(&"store".to_string()));
+    database.close();
+
+    factory.delete("test").unwrap().await.unwrap();
+}
+
+#[wasm_bindgen_test]
 async fn test_database_builder_store_names_with_index() {
     let factory = Factory::new().unwrap();
     factory.delete("test").unwrap().await.unwrap();
