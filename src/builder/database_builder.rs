@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::{Database, DatabaseEvent as _, Error, Event as _, Factory, Request as _};
 
@@ -14,6 +14,7 @@ pub struct DatabaseBuilder {
     object_stores: IndexMap<String, ObjectStoreBuilder>,
     /// Maps the new name to the old name and the builder.
     object_stores_to_rename: IndexMap<String, (String, ObjectStoreBuilder)>,
+    object_stores_to_remove: IndexSet<String>,
 }
 
 impl DatabaseBuilder {
@@ -24,6 +25,7 @@ impl DatabaseBuilder {
             version: None,
             object_stores: Default::default(),
             object_stores_to_rename: Default::default(),
+            object_stores_to_remove: Default::default(),
         }
     }
 
@@ -85,7 +87,17 @@ impl DatabaseBuilder {
             let database = event.database().expect("database");
 
             let mut existing_store_names = database.store_names();
-            let mut stores_to_retain = self
+
+            // Explicitly removed object stores
+            for store_to_remove in self.object_stores_to_remove.iter() {
+                if existing_store_names.contains(store_to_remove) {
+                    database
+                        .delete_object_store(store_to_remove)
+                        .expect("object store deletion");
+                }
+            }
+
+            let stores_to_retain = self
                 .object_stores
                 .keys()
                 .cloned()
@@ -114,18 +126,15 @@ impl DatabaseBuilder {
                     .expect("object store creation");
             }
 
-            let mut stores_to_remove = Vec::new();
-
+            // Object stores removed implicitly by not adding them
             for db_store_name in existing_store_names {
-                if !stores_to_retain.remove(&db_store_name) {
-                    stores_to_remove.push(db_store_name);
+                if !stores_to_retain.contains(&db_store_name)
+                    && !self.object_stores_to_remove.contains(&db_store_name)
+                {
+                    database
+                        .delete_object_store(&db_store_name)
+                        .expect("object store deletion");
                 }
-            }
-
-            for store_name in stores_to_remove {
-                database
-                    .delete_object_store(&store_name)
-                    .expect("object store deletion");
             }
         });
 
