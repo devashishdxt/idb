@@ -113,7 +113,7 @@
 //!     let transaction = database
 //!         .transaction(&["employees"], TransactionMode::ReadOnly)
 //!         .unwrap();
-//!     
+//!
 //!     // Get the object store
 //!     let store = transaction.object_store("employees").unwrap();
 //!
@@ -123,7 +123,7 @@
 //!     // Deserialize the stored data
 //!     let stored_employee: Option<Value> = stored_employee
 //!         .map(|stored_employee| serde_wasm_bindgen::from_value(stored_employee).unwrap());
-//!     
+//!
 //!     // Wait for the transaction to complete (alternatively, you can also commit the transaction)
 //!     transaction.await?;
 //!
@@ -169,3 +169,5 @@ pub use self::{
     cursor::{ManagedCursor, ManagedKeyCursor},
     transaction::{TransactionFuture, TransactionResult},
 };
+
+fn test() {}
