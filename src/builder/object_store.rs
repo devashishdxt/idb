@@ -29,6 +29,10 @@ impl ObjectStoreBuilder {
         &self.name
     }
 
+    pub(crate) fn set_name(&mut self, name: &str) {
+        self.name = name.to_owned()
+    }
+
     /// Sets the `auto_increment` flag.
     pub fn auto_increment(mut self, auto_increment: bool) -> Self {
         self.auto_increment = Some(auto_increment);
