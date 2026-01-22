@@ -77,6 +77,41 @@ impl DatabaseBuilder {
         self
     }
 
+    /// Mutates the chosen object store.
+    ///
+    /// Note that this does not permit renaming the object store. For that, use [`Self::rename_object_store`].
+    ///
+    /// Panics if no object store with the chosen name is found.
+    pub fn mutate_object_store(
+        mut self,
+        object_store_name: &str,
+        mutation: impl FnOnce(ObjectStoreBuilder) -> ObjectStoreBuilder,
+    ) -> Self {
+        let object_store_builder_pointer = self
+            .object_stores
+            .get_mut(object_store_name)
+            .or_else(|| {
+                self.object_stores_to_rename
+                    .get_mut(object_store_name)
+                    .map(|(_name, store)| store)
+            })
+            .expect("cannot mutate an object store which does not exist");
+
+        let dummy = ObjectStoreBuilder::new("");
+
+        // swap out the real builder with a dummy, then mutate it, then swap it back in
+        // this is sound because we don't allow for the possibility of error in the mutation function
+        let object_store_builder = std::mem::replace(object_store_builder_pointer, dummy);
+        *object_store_builder_pointer = mutation(object_store_builder);
+
+        debug_assert!(
+            !object_store_builder_pointer.name().is_empty(),
+            "dummy must have been replaced"
+        );
+
+        self
+    }
+
     /// Builds the database.
     pub async fn build(mut self) -> Result<Database, Error> {
         let factory = Factory::new()?;
