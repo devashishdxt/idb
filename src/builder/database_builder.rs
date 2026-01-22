@@ -104,6 +104,11 @@ impl DatabaseBuilder {
         let object_store_builder = std::mem::replace(object_store_builder_pointer, dummy);
         *object_store_builder_pointer = mutation(object_store_builder);
 
+        debug_assert!(
+            !object_store_builder_pointer.name().is_empty(),
+            "dummy must have been replaced"
+        );
+
         self
     }
 
