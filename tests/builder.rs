@@ -328,3 +328,60 @@ async fn test_database_builder_reopen() {
     transaction.abort().unwrap();
     database.close();
 }
+
+#[wasm_bindgen_test]
+async fn test_mutate_object_store() {
+    const DB_NAME: &str = "test";
+    const STORE_NAME: &str = "object_store";
+    const IDX_NAME: &str = "id_idx";
+
+    let factory = Factory::new().unwrap();
+    factory.delete(DB_NAME).unwrap().await.unwrap();
+
+    // here we simulate a migration workflow: version 1 creates an object store, and version 2 mutates it to add an index
+    let make_db_version_1 = || {
+        DatabaseBuilder::new(DB_NAME)
+            .version(1)
+            .add_object_store(ObjectStoreBuilder::new(STORE_NAME))
+    };
+
+    let make_db_version_2 = || {
+        make_db_version_1()
+            .version(2)
+            .mutate_object_store(STORE_NAME, |object_store_builder| {
+                object_store_builder.add_index(IndexBuilder::new(
+                    IDX_NAME.into(),
+                    KeyPath::Single("id".into()),
+                ))
+            })
+    };
+
+    // create a version 1 database and test it has no indices
+    let database = make_db_version_1().build().await.unwrap();
+    let transaction = database
+        .transaction(&[STORE_NAME], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store(STORE_NAME).unwrap();
+    let indices = store.index_names();
+    assert!(indices.is_empty());
+
+    transaction.abort().unwrap();
+    database.close();
+
+    // now migrate and test it has indices
+    let database = make_db_version_2().build().await.unwrap();
+    let transaction = database
+        .transaction(&[STORE_NAME], TransactionMode::ReadOnly)
+        .unwrap();
+
+    let store = transaction.object_store(STORE_NAME).unwrap();
+    let indices = store.index_names();
+    assert_eq!(indices, vec![IDX_NAME]);
+
+    let index = store.index(IDX_NAME);
+    assert!(index.is_ok());
+
+    transaction.abort().unwrap();
+    database.close();
+}
